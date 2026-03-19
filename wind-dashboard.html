@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🪁 Wind Dashboard — Elsbethen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg-deep:#060d1f;--bg-mid:#0a1628;--card-bg:rgba(15,25,45,0.85);--card-bg2:rgba(20,35,60,0.75);
+    --border-subtle:rgba(255,255,255,0.08);--text-dim:rgba(255,255,255,0.35);--text-dimmer:rgba(255,255,255,0.2);
+    --text-dimmest:rgba(255,255,255,0.15);--accent:rgba(0,200,255,0.7);--accent-dim:rgba(0,200,255,0.5);
+    --go-color:#22d3ee;--go-glow:rgba(34,211,238,0.15);
+  }
+  body{
+    min-height:100vh;background:linear-gradient(160deg,var(--bg-deep) 0%,var(--bg-mid) 30%,#0d1a2d 60%,#071020 100%);
+    font-family:'DM Sans',sans-serif;color:#fff;overflow-x:hidden;
+  }
+  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+
+  @keyframes fadeSlideUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+  @keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-20px) rotate(3deg)}}
+  @keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+  @keyframes glowPulse{0%,100%{box-shadow:0 0 8px var(--go-glow)}50%{box-shadow:0 0 20px var(--go-glow),0 0 40px rgba(34,211,238,0.06)}}
+
+  .orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+  .orb-1{top:-20%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(0,100,255,.06) 0%,transparent 70%);animation:float 15s ease-in-out infinite}
+  .orb-2{bottom:-15%;left:-10%;width:500px;height:500px;background:radial-gradient(circle,rgba(0,200,180,.04) 0%,transparent 70%);animation:float 20s ease-in-out infinite reverse}
+
+  .container{max-width:960px;margin:0 auto;padding:40px 20px 60px;position:relative;z-index:1}
+
+  .header{margin-bottom:36px;animation:fadeSlideUp .6s ease both}
+  .header-tag{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .header-tag span:last-child{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--accent-dim);text-transform:uppercase;letter-spacing:3px}
+  .header h1{font-family:'Anybody',sans-serif;font-weight:900;font-size:clamp(32px,6vw,50px);line-height:1.05;letter-spacing:-1.5px;margin-bottom:12px}
+  .header h1 .grad{background:linear-gradient(90deg,#00c8ff,#00ffa0,#00c8ff);background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 4s linear infinite}
+  .header p{font-size:14px;color:var(--text-dim);max-width:480px;line-height:1.6}
+
+  .best-banner{border-radius:14px;padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;gap:12px;animation:fadeSlideUp .6s ease .05s both;font-size:13px;color:rgba(255,255,255,.6)}
+
+  .alerts-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;animation:fadeSlideUp .6s ease .08s both}
+  .alert-chip{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600}
+  .alert-chip .ac-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .alert-chip.go{background:var(--go-glow);border:1px solid rgba(34,211,238,.25);color:var(--go-color)}
+  .alert-chip.go .ac-dot{background:var(--go-color);box-shadow:0 0 6px var(--go-color)}
+
+  .model-legend{display:flex;gap:6px;margin-bottom:24px;flex-wrap:wrap;animation:fadeSlideUp .6s ease .1s both}
+  .model-pill{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:16px}
+  .model-pill .dot{width:6px;height:6px;border-radius:50%}
+  .model-pill span{font-family:'DM Mono',monospace;font-size:10px;opacity:.8}
+
+  .refresh-btn{background:rgba(255,255,255,.04);border:1px solid var(--border-subtle);border-radius:10px;padding:8px 16px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.4);transition:all .2s;margin-bottom:20px;animation:fadeSlideUp .6s ease .12s both}
+  .refresh-btn:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7)}
+
+  .lake-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:20px}
+
+  .lake-card{background:linear-gradient(135deg,var(--card-bg) 0%,var(--card-bg2) 100%);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:20px;overflow:hidden;transition:transform .3s ease,box-shadow .3s ease;opacity:0;animation:fadeSlideUp .6s ease both}
+  .lake-card:nth-child(1){animation-delay:.14s}.lake-card:nth-child(2){animation-delay:.22s}
+  .lake-card:nth-child(3){animation-delay:.30s}.lake-card:nth-child(4){animation-delay:.38s}
+  .lake-card:nth-child(5){animation-delay:.46s}
+  .lake-card:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+  .lake-card.is-go{animation-name:fadeSlideUp}
+
+  .go-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 8px;border-radius:20px;background:var(--go-glow);border:1px solid rgba(34,211,238,.3);font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:var(--go-color);letter-spacing:1px;text-transform:uppercase;animation:glowPulse 2.5s ease infinite;margin-left:8px;white-space:nowrap}
+  .go-badge .go-dot{width:6px;height:6px;border-radius:50%;background:var(--go-color);box-shadow:0 0 6px var(--go-color)}
+
+  .card-header{padding:24px 24px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .lake-name{display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap}
+  .lake-name h2{font-family:'Anybody',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.5px}
+  .lake-sub{font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px}
+
+  .wind-big{text-align:right;flex-shrink:0}
+  .wind-num{display:flex;align-items:center;gap:6px;justify-content:flex-end}
+  .wind-num .val{font-family:'Anybody',sans-serif;font-weight:900;font-size:36px;line-height:1}
+  .wind-num .unit{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);align-self:flex-end;margin-bottom:4px}
+  .wind-meta{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:2px}
+  .wind-meta .gust{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.3)}
+  .wind-meta .label{font-size:11px;font-weight:700;letter-spacing:.5px}
+  .wind-loading{font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,.3);animation:pulse 1.5s ease infinite}
+  .wind-error{font-family:'DM Mono',monospace;font-size:11px;color:#ef4444}
+
+  .hourly-wrap{padding:12px 20px 4px}
+  .section-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dimmer);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase}
+  .hourly-bars{display:flex;gap:2px;align-items:flex-end;height:64px;padding:0 4px}
+  .hb-col{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1}
+  .hb-col .hb-val{font-family:'DM Mono',monospace;font-size:9px;font-weight:600}
+  .hb-col .hb-bar{width:100%;max-width:24px;border-radius:3px 3px 1px 1px;transition:height .5s ease;min-height:4px}
+  .hb-col .hb-time{font-family:'DM Mono',monospace;font-size:8px;color:rgba(255,255,255,.25)}
+
+  /* 3-day forecast */
+  .forecast-section{padding:8px 20px 8px}
+  .forecast-day{display:flex;align-items:center;gap:6px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+  .forecast-day:last-child{border-bottom:none}
+  .fd-label{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:rgba(255,255,255,.5);width:80px;flex-shrink:0}
+  .fd-dir{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.3);width:42px;text-align:center;flex-shrink:0;display:flex;align-items:center;gap:3px;justify-content:center}
+  .fd-bars{display:flex;gap:1px;flex:1;align-items:flex-end;height:36px}
+  .fb-col{display:flex;flex-direction:column;align-items:center;gap:1px;flex:1}
+  .fb-col .fb-val{font-family:'DM Mono',monospace;font-size:7px;font-weight:600;line-height:1}
+  .fb-col .fb-bar{width:100%;max-width:16px;border-radius:2px 2px 1px 1px;min-height:2px;transition:height .5s ease}
+  .fb-col .fb-time{font-family:'DM Mono',monospace;font-size:6px;color:rgba(255,255,255,.15)}
+  .fd-peak{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;width:56px;text-align:right;flex-shrink:0}
+  .fd-peak-go{position:relative}
+  .fd-peak-go::after{content:'●';font-size:6px;color:var(--go-color);position:absolute;right:-10px;top:50%;transform:translateY(-50%)}
+
+  .model-toggle{padding:0 24px 4px}
+  .model-toggle button{background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text-dim);padding:6px 0;display:flex;align-items:center;gap:6px;width:100%}
+  .model-details{padding:4px 24px 16px;animation:fadeSlideUp .3s ease both}
+  .model-bar-row{display:flex;align-items:center;gap:8px;height:22px}
+  .mb-label{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.4);width:78px;text-align:right;flex-shrink:0}
+  .mb-track{flex:1;height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
+  .mb-fill{height:100%;border-radius:3px;transition:width .8s ease}
+  .mb-kts{font-family:'DM Mono',monospace;font-size:11px;width:38px;text-align:right;flex-shrink:0}
+  .mb-gust{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.25);width:46px;text-align:right;flex-shrink:0}
+  .avg-row{margin-top:6px;border-top:1px solid rgba(255,255,255,.06);padding-top:6px}
+  .avg-row .mb-label{font-weight:700}.avg-row .mb-kts{font-size:12px;font-weight:700}
+
+  .card-sep{height:1px;background:linear-gradient(90deg,transparent,var(--border-subtle),transparent)}
+
+  .services{padding:6px 12px}
+  .svc-link{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;text-decoration:none;transition:all .2s ease}
+  .svc-link:hover{background:rgba(255,255,255,.06)}
+  .svc-icon{font-size:16px;width:22px;text-align:center}
+  .svc-name{font-weight:600;font-size:13px;color:rgba(255,255,255,.7);transition:color .2s ease;flex:1}
+  .svc-link:hover .svc-name{color:var(--svc-color)}
+  .svc-arrow{opacity:.15;transition:all .2s}
+  .svc-link:hover .svc-arrow{opacity:.8;transform:translateX(2px)}
+  .svc-link:hover .svc-arrow path{stroke:var(--svc-color)}
+
+  .footer{margin-top:48px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dimmest);letter-spacing:1px}
+  .wind-arrow{transition:transform .5s ease}
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="container">
+  <div class="header">
+    <div class="header-tag">
+      <span style="font-size:28px">🪁</span>
+      <span>Live Wind · 6 Modelle · 3 Tage</span>
+    </div>
+    <h1 id="greeting"></h1>
+    <p>Live-Durchschnitt aus ICON, GFS, ECMWF, GEM, MétéoFrance &amp; JMA für deine Spots. 3-Tage-Forecast — alles ab 8 kts leuchtet auf.</p>
+  </div>
+
+  <div id="bestBanner" class="best-banner" style="display:none"></div>
+  <div id="alertsBar" class="alerts-bar"></div>
+  <div id="modelLegend" class="model-legend"></div>
+  <button class="refresh-btn" onclick="fetchAllLakes()">↻ Aktualisieren</button>
+  <div id="lakeGrid" class="lake-grid"></div>
+  <div id="footer" class="footer"></div>
+</div>
+
+<script>
+const GO=8;
+const LAKES=[
+  {id:"wallersee",name:"Wallersee",subtitle:"Hauptspot",lat:47.916,lon:13.145,emoji:"⭐",distance:"8 km",
+    links:{windy:"https://www.windy.com/47.916/13.145?47.916,13.145,12",windyApp:"https://windy.app/forecast/f_47.916_13.145",windfinder:"https://www.windfinder.com/forecast/wallersee",windguru:"https://www.windguru.cz/48867"}},
+  {id:"mondsee",name:"Mondsee",subtitle:"Thermik-Paradies",lat:47.821,lon:13.382,emoji:"🔥",distance:"22 km",
+    links:{windy:"https://www.windy.com/47.821/13.382?47.821,13.382,12",windyApp:"https://windy.app/forecast/f_47.821_13.382",windfinder:"https://www.windfinder.com/forecast/mondsee_salzkammergut",windguru:"https://www.windguru.cz/173094"}},
+  {id:"wolfgangsee",name:"Wolfgangsee",subtitle:"Der Klassiker",lat:47.738,lon:13.408,emoji:"💎",distance:"30 km",
+    links:{windy:"https://www.windy.com/47.738/13.408?47.738,13.408,12",windyApp:"https://windy.app/forecast/f_47.738_13.408",windfinder:"https://www.windfinder.com/forecast/wolfgangsee_st_gilgen",windguru:"https://www.windguru.cz/48869"}},
+  {id:"fuschlsee",name:"Fuschlsee",subtitle:"Quick Session",lat:47.798,lon:13.296,emoji:"⚡",distance:"14 km",
+    links:{windy:"https://www.windy.com/47.798/13.296?47.798,13.296,12",windyApp:"https://windy.app/forecast/f_47.798_13.296",windfinder:"https://www.windfinder.com/forecast/fuschlsee",windguru:"https://www.windguru.cz/1354071"}},
+  {id:"podersdorf",name:"Podersdorf",subtitle:"Neusiedlersee",lat:47.854,lon:16.831,emoji:"🌬️",distance:"290 km",
+    links:{windy:"https://www.windy.com/47.854/16.831?47.854,16.831,12",windyApp:"https://windy.app/forecast/f_47.854_16.831",windfinder:"https://www.windfinder.com/forecast/podersdorf_am_see_neusiedler_see",windguru:"https://www.windguru.cz/46018"}}
+];
+
+const MODELS=[
+  {key:"icon_seamless",label:"ICON",color:"#ff6b6b"},
+  {key:"gfs_seamless",label:"GFS",color:"#ffd93d"},
+  {key:"ecmwf_ifs025",label:"ECMWF",color:"#6bcbff"},
+  {key:"gem_seamless",label:"GEM",color:"#c084fc"},
+  {key:"meteofrance_seamless",label:"MétéoFrance",color:"#4ade80"},
+  {key:"jma_seamless",label:"JMA",color:"#fb923c"}
+];
+
+const SVCS=[
+  {key:"windy",label:"Windy",color:"#ff4444",icon:"🌊"},
+  {key:"windyApp",label:"Windy.App",color:"#00c8ff",icon:"📱"},
+  {key:"windfinder",label:"Windfinder",color:"#00d68f",icon:"🔍"},
+  {key:"windguru",label:"Windguru",color:"#ffaa00",icon:"🧙"}
+];
+
+const DL=["N","NNO","NO","ONO","O","OSO","SO","SSO","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+const d2d=d=>d==null?"–":DL[Math.round(d/22.5)%16];
+const toK=k=>k!=null?(k/1.852).toFixed(1):null;
+const toKF=k=>k!=null?parseFloat((k/1.852).toFixed(1)):null;
+const wc=k=>{if(k==null)return"rgba(255,255,255,0.3)";if(k<6)return"#5a6a7a";if(k<GO)return"#78909c";if(k<10)return"#4ade80";if(k<15)return"#22d3ee";if(k<20)return"#6bcbff";if(k<25)return"#fbbf24";if(k<30)return"#fb923c";return"#ef4444"};
+const wl=k=>{if(k==null)return"–";if(k<6)return"Flaute";if(k<GO)return"Leicht";if(k<12)return"Geht los!";if(k<16)return"Wingfoil!";if(k<20)return"Perfekt!";if(k<25)return"Stark";if(k<30)return"Heftig";return"Sturm!"};
+const cM=dirs=>{if(!dirs.length)return null;const s=dirs.reduce((a,d)=>a+Math.sin(d*Math.PI/180),0),c=dirs.reduce((a,d)=>a+Math.cos(d*Math.PI/180),0);return(Math.atan2(s,c)*180/Math.PI+360)%360};
+const aS=(d,s,c)=>d==null?'':`<svg width="${s}" height="${s}" viewBox="0 0 24 24" class="wind-arrow" style="transform:rotate(${d+180}deg)"><path d="M12 2 L18 18 L12 14 L6 18 Z" fill="${c}" opacity=".9"/></svg>`;
+
+const store={},exp={};
+
+function init(){
+  const h=new Date().getHours();
+  document.getElementById('greeting').innerHTML=`${h<12?"Guten Morgen":h<17?"Servus":"Guten Abend"},<br><span class="grad">ab aufs Wasser?</span>`;
+  document.getElementById('modelLegend').innerHTML=MODELS.map(m=>`<div class="model-pill" style="border:1px solid ${m.color}22;background:${m.color}08"><div class="dot" style="background:${m.color}"></div><span style="color:${m.color}">${m.label}</span></div>`).join('');
+}
+
+function updFooter(){const n=new Date();document.getElementById('footer').textContent=`ELSBETHEN · ${n.toLocaleDateString('de-AT',{weekday:'long',day:'numeric',month:'long'})} · ${n.toLocaleTimeString('de-AT',{hour:'2-digit',minute:'2-digit'})} · Open-Meteo API`}
+
+function updBanner(){
+  let best=null,bk=-1;LAKES.forEach(l=>{const k=store[l.id]?.cur?.avgKts;if(k!=null&&k>bk){bk=k;best=l}});
+  const b=document.getElementById('bestBanner');
+  if(best&&bk>0){const c=wc(bk);b.style.display='flex';b.style.background=`linear-gradient(135deg,${c}15,${c}08)`;b.style.border=`1px solid ${c}25`;b.innerHTML=`<span style="font-size:20px">🏆</span><span>Bester Spot gerade: <strong style="color:${c}">${best.name} mit Ø ${bk.toFixed(0)} kts</strong></span>`}else b.style.display='none';
+}
+
+function updAlerts(){
+  const chips=[];
+  LAKES.forEach(l=>{
+    const wd=store[l.id];if(!wd)return;
+    const k=wd.cur.avgKts;
+    if(k>=GO) chips.push(`<div class="alert-chip go"><div class="ac-dot"></div>${l.emoji} ${l.name} — ${k.toFixed(0)} kts JETZT</div>`);
+    else if(wd.days){
+      const gd=wd.days.find(d=>d.peak>=GO);
+      if(gd) chips.push(`<div class="alert-chip go" style="opacity:.7"><div class="ac-dot"></div>${l.emoji} ${l.name} — ${gd.peak.toFixed(0)} kts ${gd.label}</div>`);
+    }
+  });
+  document.getElementById('alertsBar').innerHTML=chips.join('');
+}
+
+function parse(data){
+  const now=new Date(),times=data.hourly?.time||[];
+  let ci=0;for(let i=0;i<times.length;i++){if(new Date(times[i])<=now)ci=i;else break}
+
+  const r={cur:{},h8:[],models:{},days:[]};
+
+  MODELS.forEach(m=>{
+    const sp=data.hourly?.[`wind_speed_10m_${m.key}`],di=data.hourly?.[`wind_direction_10m_${m.key}`],gu=data.hourly?.[`wind_gusts_10m_${m.key}`];
+    if(!sp)return;
+    r.models[m.key]={speed:sp[ci],kts:toK(sp[ci]),dir:di?.[ci],gust:gu?.[ci],gKts:toK(gu?.[ci])};
+  });
+
+  const vm=Object.values(r.models).filter(m=>m.speed!=null);
+  if(vm.length){
+    r.cur.avgSpd=vm.reduce((s,m)=>s+m.speed,0)/vm.length;
+    r.cur.avgKts=toKF(r.cur.avgSpd);
+    const gm=vm.filter(m=>m.gust!=null);
+    if(gm.length){r.cur.avgGust=gm.reduce((s,m)=>s+m.gust,0)/gm.length;r.cur.avgGKts=toKF(r.cur.avgGust)}
+    const vd=vm.filter(m=>m.dir!=null);
+    if(vd.length)r.cur.avgDir=cM(vd.map(m=>m.dir));
+    r.cur.mc=vm.length;
+  }
+
+  // Next 8h
+  for(let h=1;h<=8;h++){
+    const idx=ci+h;if(idx>=times.length)break;
+    const hd={time:times[idx],sp:[],gu:[],di:[]};
+    MODELS.forEach(m=>{
+      const s=data.hourly?.[`wind_speed_10m_${m.key}`]?.[idx],g=data.hourly?.[`wind_gusts_10m_${m.key}`]?.[idx],d=data.hourly?.[`wind_direction_10m_${m.key}`]?.[idx];
+      if(s!=null)hd.sp.push(s);if(g!=null)hd.gu.push(g);if(d!=null)hd.di.push(d);
+    });
+    if(hd.sp.length){
+      hd.avgKts=toKF(hd.sp.reduce((a,b)=>a+b,0)/hd.sp.length);
+      hd.avgGKts=hd.gu.length?toKF(hd.gu.reduce((a,b)=>a+b,0)/hd.gu.length):null;
+      if(hd.di.length)hd.avgDir=cM(hd.di);
+    }
+    r.h8.push(hd);
+  }
+
+  // 3-day grouped
+  const dm={},dn=['Heute','Morgen','Übermorgen'];
+  for(let i=ci;i<times.length;i++){
+    const t=new Date(times[i]),ds=t.toISOString().slice(0,10);
+    if(!dm[ds])dm[ds]={date:ds,hrs:[]};
+    const he={time:times[i],hour:t.getHours(),sp:[],gu:[],di:[]};
+    MODELS.forEach(m=>{
+      const s=data.hourly?.[`wind_speed_10m_${m.key}`]?.[i],g=data.hourly?.[`wind_gusts_10m_${m.key}`]?.[i],d=data.hourly?.[`wind_direction_10m_${m.key}`]?.[i];
+      if(s!=null)he.sp.push(s);if(g!=null)he.gu.push(g);if(d!=null)he.di.push(d);
+    });
+    he.avgKts=he.sp.length?toKF(he.sp.reduce((a,b)=>a+b,0)/he.sp.length):0;
+    he.avgGKts=he.gu.length?toKF(he.gu.reduce((a,b)=>a+b,0)/he.gu.length):null;
+    if(he.di.length)he.avgDir=cM(he.di);
+    dm[ds].hrs.push(he);
+  }
+
+  Object.values(dm).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3).forEach((day,di)=>{
+    const dh=day.hrs.filter(h=>h.hour>=6&&h.hour<=21);
+    const uh=dh.length?dh:day.hrs;
+    const pk=uh.reduce((b,h)=>h.avgKts>b.avgKts?h:b,uh[0]);
+    const dirs=uh.filter(h=>h.avgDir!=null).map(h=>h.avgDir);
+    r.days.push({date:day.date,label:dn[di]||new Date(day.date+'T12:00').toLocaleDateString('de-AT',{weekday:'short',day:'numeric'}),hrs:uh,peak:pk.avgKts,peakG:pk.avgGKts,dir:cM(dirs)});
+  });
+
+  return r;
+}
+
+function renderCard(lake){
+  const wd=store[lake.id],loading=!wd&&!store[lake.id+'_err'],err=store[lake.id+'_err'];
+  const ak=wd?.cur?.avgKts,ag=wd?.cur?.avgGKts,ad=wd?.cur?.avgDir;
+  const _c=wc(ak),_l=wl(ak),isGo=ak>=GO,ex=exp[lake.id];
+
+  let fGoC=0;if(wd?.days)wd.days.forEach(d=>{if(d.peak>=GO)fGoC++});
+
+  // Wind display
+  let wH='';
+  if(loading)wH=`<div class="wind-loading">Laden...</div>`;
+  else if(err)wH=`<div class="wind-error">Fehler</div>`;
+  else wH=`<div class="wind-num">${aS(ad,18,_c)}<span class="val" style="color:${_c}">${ak!=null?ak.toFixed(0):'–'}</span><span class="unit">kts</span></div><div class="wind-meta">${ag!=null?`<span class="gust">G${ag.toFixed(0)}</span>`:''}<span class="label" style="color:${_c}">${d2d(ad)} · ${_l}</span></div>`;
+
+  // 8h bars
+  let h8='';
+  if(wd&&wd.h8.length){
+    const bars=wd.h8.map(h=>{
+      const k=h.avgKts||0,bH=Math.max(4,Math.min((k/35)*50,50)),t=new Date(h.time),hh=t.getHours().toString().padStart(2,'0'),c=wc(k),g=k>=GO;
+      return`<div class="hb-col"><span class="hb-val" style="color:${c};${g?'font-weight:800':''}">${k>0?k.toFixed(0):''}</span><div class="hb-bar" style="height:${bH}px;background:linear-gradient(180deg,${c},${c}44);${g?'box-shadow:0 0 8px '+c+'44':''}"></div><span class="hb-time">${hh}</span></div>`;
+    }).join('');
+    h8=`<div class="hourly-wrap"><div class="section-label">Nächste ${wd.h8.length}h (kts)</div><div class="hourly-bars">${bars}</div></div>`;
+  }
+
+  // 3-day forecast
+  let fc='';
+  if(wd&&wd.days.length){
+    const rows=wd.days.map(day=>{
+      const ig=day.peak>=GO,pc=wc(day.peak);
+      const step=Math.max(1,Math.floor(day.hrs.length/12));
+      const sam=[];for(let i=0;i<day.hrs.length;i+=step)sam.push(day.hrs[i]);if(sam.length>14)sam.length=14;
+      const bars=sam.map(h=>{
+        const k=h.avgKts||0,bH=Math.max(2,Math.min((k/35)*30,30)),c=wc(k),hg=k>=GO;
+        return`<div class="fb-col"><span class="fb-val" style="color:${c};${hg?'font-weight:800':''}">${k>=5?k.toFixed(0):''}</span><div class="fb-bar" style="height:${bH}px;background:linear-gradient(180deg,${c},${c}44);${hg?'box-shadow:0 0 6px '+c+'44':''}"></div><span class="fb-time">${h.hour.toString().padStart(2,'0')}</span></div>`;
+      }).join('');
+      return`<div class="forecast-day"><span class="fd-label" style="${ig?'color:var(--go-color);font-weight:700':''}">${day.label}</span><span class="fd-dir">${aS(day.dir,12,ig?'var(--go-color)':'rgba(255,255,255,.3)')}<span>${d2d(day.dir)}</span></span><div class="fd-bars">${bars}</div><span class="fd-peak ${ig?'fd-peak-go':''}" style="color:${pc}">${day.peak.toFixed(0)}<span style="font-size:9px;opacity:.5"> kts</span></span></div>`;
+    }).join('');
+    fc=`<div class="forecast-section"><div class="section-label">3-Tage Forecast · Peak · ab ${GO} kts = GO</div>${rows}</div>`;
+  }
+
+  // Model toggle
+  let mt='',md='';
+  if(wd){
+    mt=`<div class="model-toggle"><button onclick="tog('${lake.id}')"><svg width="10" height="10" viewBox="0 0 10 10" style="transform:rotate(${ex?90:0}deg);transition:transform .2s"><path d="M3 1L7 5L3 9" stroke="rgba(255,255,255,.3)" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>${wd.cur.mc||0} Modelle — Details ${ex?'ausblenden':'anzeigen'}</button></div>`;
+    if(ex){
+      const rows=MODELS.map(m=>{const d=wd.models[m.key],k=d?.kts,g=d?.gKts,w=k?Math.min((parseFloat(k)/35)*100,100):0;return`<div class="model-bar-row"><span class="mb-label">${m.label}</span><div class="mb-track"><div class="mb-fill" style="width:${w}%;background:linear-gradient(90deg,${m.color}88,${m.color})"></div></div><span class="mb-kts" style="color:${k?'#fff':'rgba(255,255,255,.2)'}">${k??'–'}</span><span class="mb-gust">${g?'G'+g:''}</span></div>`}).join('');
+      md=`<div class="model-details"><div class="model-bar-row" style="margin-bottom:4px"><span class="mb-label"></span><div style="flex:1"></div><span class="mb-kts" style="font-size:9px;color:rgba(255,255,255,.2)">kts</span><span class="mb-gust" style="font-size:9px;color:rgba(255,255,255,.2)">Böen</span></div>${rows}<div class="model-bar-row avg-row"><span class="mb-label" style="color:${_c}">Ø SCHNITT</span><div style="flex:1"></div><span class="mb-kts" style="color:${_c}">${ak?.toFixed(1)??'–'}</span><span class="mb-gust" style="color:rgba(255,255,255,.35)">${ag?'G'+ag.toFixed(1):''}</span></div></div>`;
+    }
+  }
+
+  const svcs=SVCS.map(s=>`<a class="svc-link" href="${lake.links[s.key]}" target="_blank" rel="noopener" style="--svc-color:${s.color}"><span class="svc-icon">${s.icon}</span><span class="svc-name">${s.label}</span><svg class="svc-arrow" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`).join('');
+
+  const badge=isGo?`<span class="go-badge"><span class="go-dot"></span>GO!</span>`:fGoC>0?`<span class="go-badge" style="opacity:.55;animation:none"><span class="go-dot" style="background:#4ade80;box-shadow:0 0 6px #4ade80"></span>${fGoC}d GO</span>`:'';
+
+  return`<div class="lake-card ${isGo?'is-go':''}" style="border:1px solid ${isGo?'var(--go-color)33':'rgba(255,255,255,0.08)'}">
+    <div class="card-header"><div><div class="lake-name"><span style="font-size:22px">${lake.emoji}</span><h2>${lake.name}</h2>${badge}</div><span class="lake-sub">${lake.subtitle} · ${lake.distance}</span></div><div class="wind-big">${wH}</div></div>
+    ${h8}${fc}${mt}${md}<div class="card-sep"></div><div class="services">${svcs}</div></div>`;
+}
+
+function renderAll(){
+  document.getElementById('lakeGrid').innerHTML=LAKES.map(l=>renderCard(l)).join('');
+  updBanner();updAlerts();updFooter();
+}
+function tog(id){exp[id]=!exp[id];renderAll()}
+
+async function fetchAllLakes(){
+  renderAll();
+  const mk=MODELS.map(m=>m.key).join(',');
+  for(const lake of LAKES){
+    delete store[lake.id+'_err'];
+    try{
+      const res=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lake.lat}&longitude=${lake.lon}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&models=${mk}&timezone=Europe/Vienna&forecast_days=3`);
+      if(!res.ok)throw new Error('API '+res.status);
+      store[lake.id]=parse(await res.json());
+    }catch(e){store[lake.id+'_err']=e.message}
+    renderAll();
+  }
+}
+
+init();renderAll();fetchAllLakes();setInterval(updFooter,60000);
+</script>
+</body>
+</html>
