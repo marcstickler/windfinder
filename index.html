@@ -136,12 +136,45 @@ body{min-height:100vh;background:linear-gradient(160deg,var(--bg-deep) 0%,var(--
 .copyright a:hover{color:rgba(255,255,255,.6)}
 .donate-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:12px;background:linear-gradient(135deg,rgba(0,112,243,.15),rgba(0,112,243,.08));border:1px solid rgba(0,112,243,.25);color:#4da6ff;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;text-decoration:none;letter-spacing:.5px;transition:all .3s ease;margin-top:4px}
 .donate-btn:hover{background:linear-gradient(135deg,rgba(0,112,243,.25),rgba(0,112,243,.15));border-color:rgba(0,112,243,.4);color:#7dc0ff;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,112,243,.15)}
+/* Fixed tip button - bigger and cooler */
+.tip-fixed{position:fixed;top:16px;right:16px;z-index:100;display:inline-flex;align-items:center;gap:10px;padding:14px 26px;border-radius:18px;background:linear-gradient(135deg,rgba(255,170,0,.2),rgba(255,60,100,.15),rgba(255,170,0,.2));background-size:200% 200%;animation:tipGradient 3s ease infinite;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1.5px solid rgba(255,170,0,.4);color:#ffcc44;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:800;text-decoration:none;transition:all .3s ease;box-shadow:0 4px 28px rgba(255,170,0,.2),inset 0 1px 0 rgba(255,255,255,.08);letter-spacing:.3px;text-shadow:0 1px 8px rgba(255,170,0,.3)}
+.tip-fixed:hover{background-size:200% 200%;border-color:rgba(255,170,0,.6);color:#ffe066;transform:translateY(-3px) scale(1.05);box-shadow:0 12px 40px rgba(255,170,0,.35),0 0 20px rgba(255,170,0,.15),inset 0 1px 0 rgba(255,255,255,.12)}
+.tip-fixed .tip-emoji{font-size:22px;animation:tipBounce 2s ease infinite;filter:drop-shadow(0 2px 4px rgba(255,170,0,.4))}
+@keyframes tipBounce{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-4px) rotate(-5deg)}75%{transform:translateY(-2px) rotate(5deg)}}
+@keyframes tipGradient{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+/* Language switcher */
+.lang-switch{position:fixed;top:16px;left:16px;z-index:100;display:flex;gap:4px;padding:4px;border-radius:12px;background:rgba(10,20,40,0.8);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.08)}
+.lang-btn{padding:6px 10px;border-radius:8px;border:none;cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;font-weight:600;color:rgba(255,255,255,.4);background:transparent;transition:all .2s}
+.lang-btn:hover{color:rgba(255,255,255,.7)}
+.lang-btn.active{color:#22d3ee;background:rgba(34,211,238,.1)}
+/* Hotspot list section */
+.hotspot-section{margin-top:32px;animation:fadeSlideUp .6s ease .2s both}
+.hotspot-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;cursor:pointer;padding:14px 20px;background:linear-gradient(135deg,rgba(15,25,45,.85),rgba(20,35,60,.75));backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:16px;border:1px solid var(--border-subtle);transition:all .2s}
+.hotspot-header:hover{border-color:rgba(255,255,255,.12);background:linear-gradient(135deg,rgba(20,30,55,.9),rgba(25,40,65,.8))}
+.hotspot-header h2{font-family:'Anybody',sans-serif;font-weight:800;font-size:18px;letter-spacing:-.5px;display:flex;align-items:center;gap:10px}
+.hotspot-header .hs-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent-dim);font-weight:500}
+.hotspot-header .hs-arrow{transition:transform .2s;color:rgba(255,255,255,.3)}
+.hotspot-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:20px;margin-top:12px}
 .wind-arrow{transition:transform .5s ease}
 </style>
 </head>
 <body>
 <div class="orb orb-1"></div>
 <div class="orb orb-2"></div>
+
+<!-- Language Switcher -->
+<div class="lang-switch">
+  <button class="lang-btn active" onclick="setLang('de')">DE</button>
+  <button class="lang-btn" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('es')">ES</button>
+  <button class="lang-btn" onclick="setLang('fr')">FR</button>
+</div>
+
+<!-- Fixed tip button -->
+<a class="tip-fixed" id="tipBtn" href="https://paypal.me/marcstickler" target="_blank" rel="noopener">
+  <span class="tip-emoji">🍺</span> <span id="tipText">Gib mir ein Bier aus!</span>
+</a>
+
 <div class="container">
   <div class="header">
     <div class="header-tag"><span style="font-size:28px">🪁</span><span>Live Wind · 6 Modelle · 3 Tage</span></div>
@@ -153,6 +186,16 @@ body{min-height:100vh;background:linear-gradient(160deg,var(--bg-deep) 0%,var(--
   <div id="modelLegend" class="model-legend"></div>
   <button class="refresh-btn" onclick="fetchAllLakes()">↻ Aktualisieren</button>
   <div id="lakeGrid" class="lake-grid"></div>
+
+  <!-- International Hotspot Section -->
+  <div class="hotspot-section">
+    <div class="hotspot-header" id="hotspotToggle" onclick="toggleHotspots()">
+      <h2>🌍 Europe & International Hotspots <span class="hs-count" id="hotspotCount"></span></h2>
+      <svg width="14" height="14" viewBox="0 0 14 14" class="hs-arrow" id="hotspotArrow"><path d="M4 2L10 7L4 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+    </div>
+    <div id="hotspotGrid" class="hotspot-list" style="display:none"></div>
+  </div>
+
   <div id="footer" class="footer"></div>
   <div class="copyright">© 2026 <a href="https://github.com/marcstickler" target="_blank" rel="noopener">Marc Stickler</a> · Made with 🪁 & ☕</div>
   <div style="text-align:center">
@@ -166,7 +209,7 @@ body{min-height:100vh;background:linear-gradient(160deg,var(--bg-deep) 0%,var(--
 <script>
 const GO=8;
 const LAKES=[
-  {id:"wallersee",name:"Wallersee",subtitle:"Hauptspot",lat:47.916,lon:13.145,emoji:"⭐",distance:"8 km",
+  {group:"home",id:"wallersee",name:"Wallersee",subtitle:"Hauptspot",lat:47.916,lon:13.145,emoji:"⭐",distance:"8 km",
     mapZoom:13,bestDirs:["O","W","SW"],okDirs:["NO","WSW"],
     spots:[
       {name:"Strandbad Seekirchen",desc:"Haupt-Kitespot bei Ostwind (onshore). Steg als Einstieg. Nur außerhalb Badesaison!",lat:47.9188,lon:13.1333,type:"kite",parking:"Parkplätze am Strandbad, ausreichend vorhanden"},
@@ -176,7 +219,7 @@ const LAKES=[
     ],
     spotNote:"Ost-West ausgerichtet. Höhelaufen Pflicht! Kein Anfängerspot. Ostwind im Frühling/Herbst häufig, beginnt spät Vormittag, endet ~17h.",
     links:{windy:"https://www.windy.com/47.916/13.145?47.916,13.145,12",windyApp:"https://windy.app/forecast/f_47.916_13.145",windfinder:"https://www.windfinder.com/forecast/wallersee",windguru:"https://www.windguru.cz/48867"}},
-  {id:"mondsee",name:"Mondsee",subtitle:"Thermik-Paradies",lat:47.821,lon:13.382,emoji:"🔥",distance:"22 km",
+  {group:"home",id:"mondsee",name:"Mondsee",subtitle:"Thermik-Paradies",lat:47.821,lon:13.382,emoji:"🔥",distance:"22 km",
     mapZoom:13,bestDirs:["SO","O","OSO"],okDirs:["NW","W"],
     spots:[
       {name:"Südufer / Badestrand",desc:"Haupt-Spot bei 'Nebelwind' aus SO. Sandbank zum Starten. Im Sommer von Badegästen überfüllt.",lat:47.8120,lon:13.3950,type:"kite",parking:"Parkplätze an der B154, früh kommen!"},
@@ -185,7 +228,7 @@ const LAKES=[
     ],
     spotNote:"Spezialwind 'Nebelwind': SO-Thermik wenn Nebel zwischen Attersee & Mondsee steht. Bis 6 Bft! Check 12er Horn Station & Mondsee Webcam. Frühling & Herbst. Kein Anfängerspot.",
     links:{windy:"https://www.windy.com/47.821/13.382?47.821,13.382,12",windyApp:"https://windy.app/forecast/f_47.821_13.382",windfinder:"https://www.windfinder.com/forecast/mondsee_salzkammergut",windguru:"https://www.windguru.cz/173094"}},
-  {id:"wolfgangsee",name:"Wolfgangsee",subtitle:"Der Klassiker",lat:47.738,lon:13.408,emoji:"💎",distance:"30 km",
+  {group:"home",id:"wolfgangsee",name:"Wolfgangsee",subtitle:"Der Klassiker",lat:47.738,lon:13.408,emoji:"💎",distance:"30 km",
     mapZoom:13,bestDirs:["NW","W","WNW"],okDirs:["N"],
     spots:[
       {name:"Gamsjaga / Gschwand",desc:"DER Kitespot! Winziger Strand, max. 25m Leinen. Kaltfronten bringen 5-9 Bft. Felsiger Einstieg — Schuhe empfohlen!",lat:47.7435,lon:13.3780,type:"kite",parking:"Parkplatz neben Gasthof Gamsjaga (€ im Sommer). Wird bei Wind VOLL — früh kommen!"},
@@ -193,7 +236,7 @@ const LAKES=[
     ],
     spotNote:"DER Starkwind-See! Kaltfronten aus NW = 5-9 Bft in Minuten. Brunnwind (NW-Thermik) für Leichtwind. Tipp: Wenn Wind am Chiemsee nachlässt → 45-60 Min. später geht's am Wolfgangsee los. KEIN Anfängerspot!",
     links:{windy:"https://www.windy.com/47.738/13.408?47.738,13.408,12",windyApp:"https://windy.app/forecast/f_47.738_13.408",windfinder:"https://www.windfinder.com/forecast/wolfgangsee_st_gilgen",windguru:"https://www.windguru.cz/48869"}},
-  {id:"fuschlsee",name:"Fuschlsee",subtitle:"Quick Session",lat:47.798,lon:13.296,emoji:"⚡",distance:"14 km",
+  {group:"home",id:"fuschlsee",name:"Fuschlsee",subtitle:"Quick Session",lat:47.798,lon:13.296,emoji:"⚡",distance:"14 km",
     mapZoom:14,bestDirs:["O","W"],okDirs:["SO","NW"],
     spots:[
       {name:"Badeplatz Wesenauer",desc:"Wingfoil-Hauptspot. Gebühr. Guter Einstieg, überschaubar.",lat:47.7960,lon:13.2850,type:"wing",parking:"Kostenpflichtiger Parkplatz Wesenauer"},
@@ -201,7 +244,7 @@ const LAKES=[
     ],
     spotNote:"Wingfoil-Geheimtipp! Ost-West ausgerichtet, überschaubare Größe. WING BOX Locals vor Ort als Ansprechpartner. Naturschutzzonen & private Badeplätze beachten!",
     links:{windy:"https://www.windy.com/47.798/13.296?47.798,13.296,12",windyApp:"https://windy.app/forecast/f_47.798_13.296",windfinder:"https://www.windfinder.com/forecast/fuschlsee",windguru:"https://www.windguru.cz/1354071"}},
-  {id:"chiemsee",name:"Chiemsee",subtitle:"Bayerisches Meer",lat:47.870,lon:12.470,emoji:"🏔️",distance:"60 km",
+  {group:"home",id:"chiemsee",name:"Chiemsee",subtitle:"Bayerisches Meer",lat:47.870,lon:12.470,emoji:"🏔️",distance:"60 km",
     mapZoom:11,bestDirs:["W","WNW","NW"],okDirs:["WSW","O","NO"],
     spots:[
       {name:"Chieming (Kitespot)",desc:"Offizieller Kitespot bei Westwind! Vor der Frauenklinik. Breiter Kiesstrand, Flachwasser, Stehbereich. Welle bei Starkwind bis 1.5m!",lat:47.8680,lon:12.5310,type:"kite",parking:"Parkplätze direkt am Spot, kostenlos"},
@@ -211,7 +254,7 @@ const LAKES=[
     ],
     spotNote:"Drittgrößter See Deutschlands — viel Platz! Westwind bei Sturmtiefs, Föhn aus Süd, Ostwind im Hochsommer. Starkwind bringt schöne Welle. Prien & Chieming Wetterstationen checken. Tipp: Wolfgangsee-Indikator!",
     links:{windy:"https://www.windy.com/47.870/12.470?47.870,12.470,11",windyApp:"https://windy.app/forecast/f_47.870_12.470",windfinder:"https://www.windfinder.com/forecast/chiemsee_feldwies",windguru:"https://www.windguru.cz/49421"}},
-  {id:"gardasee",name:"Gardasee",subtitle:"Lago di Garda",lat:45.720,lon:10.720,emoji:"🇮🇹",distance:"380 km",
+  {group:"home",id:"gardasee",name:"Gardasee",subtitle:"Lago di Garda",lat:45.720,lon:10.720,emoji:"🇮🇹",distance:"380 km",
     mapZoom:11,bestDirs:["N","S"],okDirs:["NW","SO"],
     spots:[
       {name:"Campagnola (Kitespot)",desc:"Morgens Pelér (N, 4-5 Bft). Nachmittags Ora böig. Steiniger Strand. Kite-Haftpflicht + Lizenz nötig!",lat:45.7550,lon:10.8130,type:"kite",parking:"Kostenpflichtiger Parkplatz am Spot"},
@@ -222,7 +265,7 @@ const LAKES=[
     ],
     spotNote:"2 Winde täglich: Pelér (N, morgens bis ~11h, bis 25kts) + Ora (S, ab Mittag bis Abend, konstant). Kiten nur an 2 öffentlichen Spots + Lizenz & Versicherung Pflicht! Wingfoilen überall möglich. März-Oktober. Am WE überfüllt!",
     links:{windy:"https://www.windy.com/45.720/10.720?45.720,10.720,10",windyApp:"https://windy.app/forecast/f_45.720_10.720",windfinder:"https://www.windfinder.com/forecast/gardasee_torbole",windguru:"https://www.windguru.cz/49955"}},
-  {id:"tarifa",name:"Tarifa",subtitle:"Wind-Hauptstadt Europas",lat:36.014,lon:-5.604,emoji:"🇪🇸",distance:"2500 km",
+  {group:"intl",id:"tarifa",name:"Tarifa",subtitle:"Wind-Hauptstadt Europas",lat:36.014,lon:-5.604,emoji:"🇪🇸",distance:"2500 km",
     mapZoom:12,bestDirs:["O","W"],okDirs:["SO","SW"],
     spots:[
       {name:"Playa de Los Lances",desc:"Haupt-Kitespot. Langer breiter Strand für alle Level. Levante (O) & Poniente (W).",lat:36.0220,lon:-5.6150,type:"kite",parking:"Gratis Strandparkplätze"},
@@ -230,7 +273,7 @@ const LAKES=[
     ],
     spotNote:"~300 Windtage/Jahr! Levante (O) & Poniente (W) durch Straße von Gibraltar. April-Oktober Hauptsaison. 40+ Kiteschulen. Europas Kite-Mekka.",
     links:{windy:"https://www.windy.com/36.014/-5.604?36.014,-5.604,12",windyApp:"https://windy.app/forecast/f_36.014_-5.604",windfinder:"https://www.windfinder.com/forecast/tarifa",windguru:"https://www.windguru.cz/54"}},
-  {id:"fuerteventura",name:"Fuerteventura",subtitle:"Kanaren-Paradies",lat:28.390,lon:-14.000,emoji:"🇪🇸",distance:"3400 km",
+  {group:"intl",id:"fuerteventura",name:"Fuerteventura",subtitle:"Kanaren-Paradies",lat:28.390,lon:-14.000,emoji:"🇪🇸",distance:"3400 km",
     mapZoom:10,bestDirs:["N","NNO","NO"],okDirs:["NW"],
     spots:[
       {name:"Sotavento / Risco del Paso",desc:"Weltberühmte Lagune! Flachwasser, ideal zum Lernen. Trade Winds fast ganzjährig.",lat:28.0720,lon:-14.2280,type:"kite",parking:"Strandparkplatz (gratis)"},
@@ -238,7 +281,7 @@ const LAKES=[
     ],
     spotNote:"Passatwinde NNO ganzjährig 15-30kts. 300+ Sonnentage. Sotavento-Lagune = Anfänger-Paradies. Weltcup-Location. Ganzjährig!",
     links:{windy:"https://www.windy.com/28.390/-14.000?28.390,-14.000,10",windyApp:"https://windy.app/forecast/f_28.390_-14.000",windfinder:"https://www.windfinder.com/forecast/fuerteventura_costa_calma",windguru:"https://www.windguru.cz/50"}},
-  {id:"leucate",name:"Leucate",subtitle:"Südfrankreich",lat:42.862,lon:3.042,emoji:"🇫🇷",distance:"1300 km",
+  {group:"intl",id:"leucate",name:"Leucate",subtitle:"Südfrankreich",lat:42.862,lon:3.042,emoji:"🇫🇷",distance:"1300 km",
     mapZoom:12,bestDirs:["NW","N"],okDirs:["W","S"],
     spots:[
       {name:"La Franqui",desc:"Kilometerlanger Sandstrand. Tramontane (NW) bis 40kts. Top für Freestyle & Wave.",lat:42.9210,lon:3.0420,type:"kite",parking:"Gratis Strandparkplatz La Franqui"},
@@ -246,14 +289,14 @@ const LAKES=[
     ],
     spotNote:"Tramontane (NW) & Marin (S) — 30+ Jahre Kite-Geschichte. April-Oktober. Lagune + Meer = alle Level. Surfschulen & Verleihe überall.",
     links:{windy:"https://www.windy.com/42.862/3.042?42.862,3.042,12",windyApp:"https://windy.app/forecast/f_42.862_3.042",windfinder:"https://www.windfinder.com/forecast/leucate",windguru:"https://www.windguru.cz/227"}},
-  {id:"lo_stagnone",name:"Lo Stagnone",subtitle:"Sizilien",lat:37.867,lon:12.460,emoji:"🇮🇹",distance:"1400 km",
+  {group:"intl",id:"lo_stagnone",name:"Lo Stagnone",subtitle:"Sizilien",lat:37.867,lon:12.460,emoji:"🇮🇹",distance:"1400 km",
     mapZoom:13,bestDirs:["NW","W","SW"],okDirs:["N","S"],
     spots:[
       {name:"Lo Stagnone Lagune",desc:"Riesige flache Lagune, Stehbereich. Perfekt zum Lernen! Warmes Wasser, Salzfelder-Kulisse.",lat:37.8670,lon:12.4600,type:"kite",parking:"Parkplätze an den Kiteschulen"}
     ],
     spotNote:"Flachste Lagune im Mittelmeer! Stehrevier, warm, Mai-September. Maestrale (NW) & Scirocco (S). Anfänger-Paradies mit Blick auf die Ägadischen Inseln.",
     links:{windy:"https://www.windy.com/37.867/12.460?37.867,12.460,13",windyApp:"https://windy.app/forecast/f_37.867_12.460",windfinder:"https://www.windfinder.com/forecast/marsala_lo_stagnone",windguru:"https://www.windguru.cz/48127"}},
-  {id:"dakhla",name:"Dakhla",subtitle:"Marokko",lat:23.713,lon:-15.946,emoji:"🇲🇦",distance:"4200 km",
+  {group:"intl",id:"dakhla",name:"Dakhla",subtitle:"Marokko",lat:23.713,lon:-15.946,emoji:"🇲🇦",distance:"4200 km",
     mapZoom:11,bestDirs:["N","NNO","NO"],okDirs:["NW","NNW"],
     spots:[
       {name:"Dakhla Lagune",desc:"Endlose Flachwasser-Lagune. Trade Winds 20-30kts. Stehbereich. Ganzjährig!",lat:23.7500,lon:-15.8500,type:"kite",parking:"Bei den Kite-Camps/Hotels"},
@@ -261,7 +304,7 @@ const LAKES=[
     ],
     spotNote:"Passat ganzjährig 20-30kts! Flache Lagune zwischen Wüste & Ozean. Wasser 19-24°C. März-November optimal. World-Class Freeride & Speed. Kite-Camps direkt an der Lagune.",
     links:{windy:"https://www.windy.com/23.713/-15.946?23.713,-15.946,11",windyApp:"https://windy.app/forecast/f_23.713_-15.946",windfinder:"https://www.windfinder.com/forecast/dakhla",windguru:"https://www.windguru.cz/282"}},
-  {id:"el_gouna",name:"El Gouna",subtitle:"Ägypten / Rotes Meer",lat:27.211,lon:33.680,emoji:"🇪🇬",distance:"3200 km",
+  {group:"intl",id:"el_gouna",name:"El Gouna",subtitle:"Ägypten / Rotes Meer",lat:27.211,lon:33.680,emoji:"🇪🇬",distance:"3200 km",
     mapZoom:12,bestDirs:["N","NNW","NW"],okDirs:["NNO"],
     spots:[
       {name:"Mangroovy Beach / Elements",desc:"Haupt-Kitespot. Flachwasser-Lagune, Stehbereich, thermischer Nord-Wind. Perfekt zum Lernen & Foilen.",lat:27.2050,lon:33.6700,type:"kite",parking:"Am Kite-Center / Hotel"},
@@ -286,7 +329,7 @@ const d2d=d=>d==null?"–":DL[Math.round(d/22.5)%16];
 const toK=k=>k!=null?(k/1.852).toFixed(1):null;
 const toKF=k=>k!=null?parseFloat((k/1.852).toFixed(1)):null;
 const wc=k=>{if(k==null)return"rgba(255,255,255,0.3)";if(k<6)return"#5a6a7a";if(k<GO)return"#78909c";if(k<10)return"#4ade80";if(k<15)return"#22d3ee";if(k<20)return"#6bcbff";if(k<25)return"#fbbf24";if(k<30)return"#fb923c";return"#ef4444"};
-const wl=k=>{if(k==null)return"–";if(k<6)return"Flaute";if(k<GO)return"Leicht";if(k<12)return"Geht los!";if(k<16)return"Wingfoil!";if(k<20)return"Perfekt!";if(k<25)return"Stark";if(k<30)return"Heftig";return"Sturm!"};
+const wl=k=>{if(k==null)return"–";if(k<6)return t('calm');if(k<GO)return t('light');if(k<12)return t('getsGoing');if(k<16)return t('wingfoil');if(k<20)return t('perfect');if(k<25)return t('strong');if(k<30)return t('heavy');return t('storm')};
 const cM=dirs=>{if(!dirs.length)return null;const s=dirs.reduce((a,d)=>a+Math.sin(d*Math.PI/180),0),c=dirs.reduce((a,d)=>a+Math.cos(d*Math.PI/180),0);return(Math.atan2(s,c)*180/Math.PI+360)%360};
 const aS=(d,s,c)=>d==null?'':`<svg width="${s}" height="${s}" viewBox="0 0 24 24" class="wind-arrow" style="transform:rotate(${d+180}deg)"><path d="M12 2 L18 18 L12 14 L6 18 Z" fill="${c}" opacity=".9"/></svg>`;
 
@@ -332,21 +375,22 @@ let maps={};
 
 function init(){
   const h=new Date().getHours();
-  document.getElementById('greeting').innerHTML=`${h<12?"Guten Morgen":h<17?"Servus":"Guten Abend"},<br><span class="grad">ab aufs Wasser?</span>`;
+  const g=h<12?t('greetMorn'):h<17?t('greetDay'):t('greetEve');
+  document.getElementById('greeting').innerHTML=`${g},<br><span class="grad">${t('cta')}</span>`;
   document.getElementById('modelLegend').innerHTML=MODELS.map(m=>`<div class="model-pill" style="border:1px solid ${m.color}22;background:${m.color}08"><div class="dot" style="background:${m.color}"></div><span style="color:${m.color}">${m.label}</span></div>`).join('');
 }
-function updFooter(){const n=new Date();document.getElementById('footer').innerHTML=`<div class="footer-line">ELSBETHEN · ${n.toLocaleDateString('de-AT',{weekday:'long',day:'numeric',month:'long'})} · ${n.toLocaleTimeString('de-AT',{hour:'2-digit',minute:'2-digit'})} · Open-Meteo API</div>`}
+function updFooter(){const n=new Date();const loc=I18N[lang]?.locale||'de-AT';document.getElementById('footer').innerHTML=`<div class="footer-line">ELSBETHEN · ${n.toLocaleDateString(loc,{weekday:'long',day:'numeric',month:'long'})} · ${n.toLocaleTimeString(loc,{hour:'2-digit',minute:'2-digit'})} · Open-Meteo API</div>`}
 function updBanner(){
   let best=null,bk=-1;LAKES.forEach(l=>{const k=store[l.id]?.cur?.avgKts;if(k!=null&&k>bk){bk=k;best=l}});
   const b=document.getElementById('bestBanner');
-  if(best&&bk>0){const c=wc(bk);b.style.display='flex';b.style.background=`linear-gradient(135deg,${c}15,${c}08)`;b.style.border=`1px solid ${c}25`;b.innerHTML=`<span style="font-size:20px">🏆</span><span>Bester Spot gerade: <strong style="color:${c}">${best.name} mit Ø ${bk.toFixed(0)} kts</strong></span>`}else b.style.display='none';
+  if(best&&bk>0){const c=wc(bk);b.style.display='flex';b.style.background=`linear-gradient(135deg,${c}15,${c}08)`;b.style.border=`1px solid ${c}25`;b.innerHTML=`<span style="font-size:20px">🏆</span><span>${t('bestSpot')}: <strong style="color:${c}">${best.name} ${t('with')} ${bk.toFixed(0)} kts</strong></span>`}else b.style.display='none';
 }
 function updAlerts(){
   const chips=[];
   LAKES.forEach(l=>{
     const wd=store[l.id];if(!wd)return;
     const k=wd.cur.avgKts;
-    if(k>=GO)chips.push(`<div class="alert-chip go"><div class="ac-dot"></div>${l.emoji} ${l.name} — ${k.toFixed(0)} kts JETZT</div>`);
+    if(k>=GO)chips.push(`<div class="alert-chip go"><div class="ac-dot"></div>${l.emoji} ${l.name} — ${k.toFixed(0)} ${t('ktsNow')}</div>`);
     else if(wd.days){const gd=wd.days.find(d=>d.peak>=GO);if(gd)chips.push(`<div class="alert-chip go" style="opacity:.7"><div class="ac-dot"></div>${l.emoji} ${l.name} — ${gd.peak.toFixed(0)} kts ${gd.label}</div>`)}
   });
   document.getElementById('alertsBar').innerHTML=chips.join('');
@@ -373,7 +417,7 @@ function parse(data){
     if(hd.sp.length){hd.avgKts=toKF(hd.sp.reduce((a,b)=>a+b,0)/hd.sp.length);hd.avgGKts=hd.gu.length?toKF(hd.gu.reduce((a,b)=>a+b,0)/hd.gu.length):null;if(hd.di.length)hd.avgDir=cM(hd.di)}
     r.h8.push(hd);
   }
-  const dm={},dn=['Heute','Morgen','Übermorgen'];
+  const dm={},dn=[t('today'),t('tomorrow'),t('dayAfter')];
   for(let i=ci;i<times.length;i++){
     const t=new Date(times[i]),ds=t.toISOString().slice(0,10);if(!dm[ds])dm[ds]={date:ds,hrs:[]};
     const he={time:times[i],hour:t.getHours(),sp:[],gu:[],di:[]};
@@ -406,18 +450,18 @@ function renderCard(lake){
   const _c=wc(ak),_l=wl(ak),isGo=ak>=GO,ex=exp[lake.id];
   let fGoC=0;if(wd?.days)wd.days.forEach(d=>{if(d.peak>=GO)fGoC++});
   const dirMatch=windDirMatch(lake,ad);
-  const dirMatchBadge=dirMatch==='best'?'<span style="font-size:10px;color:#22d3ee;font-family:\'DM Mono\',monospace;font-weight:700;margin-left:4px">✓ OPTIMAL</span>':dirMatch==='ok'?'<span style="font-size:10px;color:#fbbf24;font-family:\'DM Mono\',monospace;font-weight:600;margin-left:4px">~ OK</span>':dirMatch==='miss'&&ak>=GO?'<span style="font-size:10px;color:#fb923c;font-family:\'DM Mono\',monospace;font-weight:600;margin-left:4px">✗ PASST NICHT</span>':'';
+  const dirMatchBadge=dirMatch==='best'?`<span style="font-size:10px;color:#22d3ee;font-family:'DM Mono',monospace;font-weight:700;margin-left:4px">${t('optimal')}</span>`:dirMatch==='ok'?`<span style="font-size:10px;color:#fbbf24;font-family:'DM Mono',monospace;font-weight:600;margin-left:4px">${t('ok')}</span>`:dirMatch==='miss'&&ak>=GO?`<span style="font-size:10px;color:#fb923c;font-family:'DM Mono',monospace;font-weight:600;margin-left:4px">${t('noMatch')}</span>`:'';
 
   let wH='';
-  if(loading)wH='<div class="wind-loading">Laden...</div>';
-  else if(err)wH='<div class="wind-error">Fehler</div>';
+  if(loading)wH=`<div class="wind-loading">${t('loading')}</div>`;
+  else if(err)wH=`<div class="wind-error">${t('error')}</div>`;
   else wH=`<div class="wind-num">${aS(ad,18,_c)}<span class="val" style="color:${_c}">${ak!=null?ak.toFixed(0):'–'}</span><span class="unit">kts</span></div><div class="wind-meta">${ag!=null?`<span class="gust">G${ag.toFixed(0)}</span>`:''}<span class="label" style="color:${_c}">${d2d(ad)} · ${_l}</span>${dirMatchBadge}</div>`;
 
   // Spot info: expandable map + entries
   const sExp=spotExp[lake.id];
   const spotToggle=`<div class="spot-toggle" onclick="togSpot('${lake.id}')">
     <svg width="10" height="10" viewBox="0 0 10 10"><path d="M3 1L7 5L3 9" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" class="st-arrow" style="transform:rotate(${sExp?90:0}deg)"/></svg>
-    🗺️ ${lake.spots?lake.spots.length:0} Einstiege & Karte ${sExp?'ausblenden':'anzeigen'}
+    🗺️ ${lake.spots?lake.spots.length:0} ${t('spotsMap')} ${sExp?t('hide'):t('show')}
   </div>`;
 
   let spotHTML='';
@@ -446,16 +490,16 @@ function renderCard(lake){
   let h8='';
   if(wd&&wd.h8.length){
     const bars=wd.h8.map(h=>{const k=h.avgKts||0,bH=Math.max(4,Math.min((k/35)*50,50)),t=new Date(h.time),hh=t.getHours().toString().padStart(2,'0'),c=wc(k),g=k>=GO;return`<div class="hb-col"><span class="hb-val" style="color:${c};${g?'font-weight:800':''}">${k>0?k.toFixed(0):''}</span><div class="hb-bar" style="height:${bH}px;background:linear-gradient(180deg,${c},${c}44);${g?'box-shadow:0 0 8px '+c+'44':''}"></div><span class="hb-time">${hh}</span></div>`}).join('');
-    h8=`<div class="hourly-wrap"><div class="section-label">Nächste ${wd.h8.length}h (kts)</div><div class="hourly-bars">${bars}</div></div>`;
+    h8=`<div class="hourly-wrap"><div class="section-label">${t('next')} ${wd.h8.length}h (kts)</div><div class="hourly-bars">${bars}</div></div>`;
   }
   let fc='';
   if(wd&&wd.days.length){
     const rows=wd.days.map(day=>{const ig=day.peak>=GO,pc=wc(day.peak);const step=Math.max(1,Math.floor(day.hrs.length/12));const sam=[];for(let i=0;i<day.hrs.length;i+=step)sam.push(day.hrs[i]);if(sam.length>14)sam.length=14;const bars=sam.map(h=>{const k=h.avgKts||0,bH=Math.max(2,Math.min((k/35)*30,30)),c=wc(k),hg=k>=GO;return`<div class="fb-col"><span class="fb-val" style="color:${c};${hg?'font-weight:800':''}">${k>=5?k.toFixed(0):''}</span><div class="fb-bar" style="height:${bH}px;background:linear-gradient(180deg,${c},${c}44);${hg?'box-shadow:0 0 6px '+c+'44':''}"></div><span class="fb-time">${h.hour.toString().padStart(2,'0')}</span></div>`}).join('');return`<div class="forecast-day"><span class="fd-label" style="${ig?'color:var(--go-color);font-weight:700':''}">${day.label}</span><span class="fd-dir">${aS(day.dir,12,ig?'var(--go-color)':'rgba(255,255,255,.3)')}<span>${d2d(day.dir)}</span></span><div class="fd-bars">${bars}</div><span class="fd-peak ${ig?'fd-peak-go':''}" style="color:${pc}">${day.peak.toFixed(0)}<span style="font-size:9px;opacity:.5"> kts</span></span></div>`}).join('');
-    fc=`<div class="forecast-section"><div class="section-label">3-Tage Forecast · Peak · ab ${GO} kts = GO</div>${rows}</div>`;
+    fc=`<div class="forecast-section"><div class="section-label">${t('forecastTitle')} ${GO} kts ${t('goLabel')}</div>${rows}</div>`;
   }
   let mt='',md='';
   if(wd){
-    mt=`<div class="model-toggle"><button onclick="tog('${lake.id}')"><svg width="10" height="10" viewBox="0 0 10 10" style="transform:rotate(${ex?90:0}deg);transition:transform .2s"><path d="M3 1L7 5L3 9" stroke="rgba(255,255,255,.3)" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>${wd.cur.mc||0} Modelle — Details ${ex?'ausblenden':'anzeigen'}</button></div>`;
+    mt=`<div class="model-toggle"><button onclick="tog('${lake.id}')"><svg width="10" height="10" viewBox="0 0 10 10" style="transform:rotate(${ex?90:0}deg);transition:transform .2s"><path d="M3 1L7 5L3 9" stroke="rgba(255,255,255,.3)" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>${wd.cur.mc||0} ${t('models')} — ${t('details')} ${ex?t('hide'):t('show')}</button></div>`;
     if(ex){const rows=MODELS.map(m=>{const d=wd.models[m.key],k=d?.kts,g=d?.gKts,w=k?Math.min((parseFloat(k)/35)*100,100):0;return`<div class="model-bar-row"><span class="mb-label">${m.label}</span><div class="mb-track"><div class="mb-fill" style="width:${w}%;background:linear-gradient(90deg,${m.color}88,${m.color})"></div></div><span class="mb-kts" style="color:${k?'#fff':'rgba(255,255,255,.2)'}">${k??'–'}</span><span class="mb-gust">${g?'G'+g:''}</span></div>`}).join('');md=`<div class="model-details"><div class="model-bar-row" style="margin-bottom:4px"><span class="mb-label"></span><div style="flex:1"></div><span class="mb-kts" style="font-size:9px;color:rgba(255,255,255,.2)">kts</span><span class="mb-gust" style="font-size:9px;color:rgba(255,255,255,.2)">Böen</span></div>${rows}<div class="model-bar-row avg-row"><span class="mb-label" style="color:${_c}">Ø SCHNITT</span><div style="flex:1"></div><span class="mb-kts" style="color:${_c}">${ak?.toFixed(1)??'–'}</span><span class="mb-gust" style="color:rgba(255,255,255,.35)">${ag?'G'+ag.toFixed(1):''}</span></div></div>`}
   }
   const svcs=SVCS.map(s=>`<a class="svc-link" href="${lake.links[s.key]}" target="_blank" rel="noopener" style="--svc-color:${s.color}"><span class="svc-icon">${s.icon}</span><span class="svc-name">${s.label}</span><svg class="svc-arrow" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`).join('');
@@ -493,18 +537,43 @@ function initMaps(){
   });
 }
 
+let hotspotsOpen=false;
+function toggleHotspots(){
+  hotspotsOpen=!hotspotsOpen;
+  renderAll();
+  if(hotspotsOpen){
+    // Fetch intl spots if not loaded yet
+    const intl=LAKES.filter(l=>l.group==='intl');
+    const needsFetch=intl.some(l=>!store[l.id]&&!store[l.id+'_err']);
+    if(needsFetch) fetchGroup('intl');
+  }
+}
+
 function renderAll(){
-  document.getElementById('lakeGrid').innerHTML=LAKES.map(l=>renderCard(l)).join('');
+  const home=LAKES.filter(l=>l.group==='home');
+  const intl=LAKES.filter(l=>l.group==='intl');
+  document.getElementById('lakeGrid').innerHTML=home.map(l=>renderCard(l)).join('');
+  document.getElementById('hotspotCount').textContent=intl.length+' Spots';
+  document.getElementById('hotspotArrow').style.transform=hotspotsOpen?'rotate(90deg)':'rotate(0deg)';
+  const hGrid=document.getElementById('hotspotGrid');
+  if(hotspotsOpen){
+    hGrid.style.display='grid';
+    hGrid.innerHTML=intl.map(l=>renderCard(l)).join('');
+  } else {
+    hGrid.style.display='none';
+    hGrid.innerHTML='';
+  }
   updBanner();updAlerts();updFooter();
   setTimeout(initMaps,100);
 }
 function tog(id){exp[id]=!exp[id];renderAll()}
 function togSpot(id){spotExp[id]=!spotExp[id];renderAll()}
 
-async function fetchAllLakes(){
-  renderAll();
+async function fetchGroup(group){
+  const lakes=LAKES.filter(l=>l.group===group);
   const mk=MODELS.map(m=>m.key).join(',');
-  for(const lake of LAKES){
+  for(const lake of lakes){
+    if(store[lake.id])continue; // already fetched
     delete store[lake.id+'_err'];
     try{
       const res=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lake.lat}&longitude=${lake.lon}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&models=${mk}&timezone=Europe/Vienna&forecast_days=3`);
@@ -515,7 +584,112 @@ async function fetchAllLakes(){
   }
 }
 
+async function fetchAllLakes(){
+  // Clear home data for refresh
+  LAKES.filter(l=>l.group==='home').forEach(l=>{delete store[l.id];delete store[l.id+'_err']});
+  if(hotspotsOpen) LAKES.filter(l=>l.group==='intl').forEach(l=>{delete store[l.id];delete store[l.id+'_err']});
+  renderAll();
+  await fetchGroup('home');
+  if(hotspotsOpen) await fetchGroup('intl');
+}
+
+// ── i18n ──
+const I18N={
+  de:{
+    greetMorn:"Guten Morgen",greetDay:"Servus",greetEve:"Guten Abend",
+    cta:"ab aufs Wasser?",
+    tagline:"Live Wind · 6 Modelle · 3 Tage",
+    desc:"Live-Durchschnitt aus ICON, GFS, ECMWF, GEM, MétéoFrance & JMA — Deine Homebase-Seen + die besten Kite & Wingfoil Hotspots.",
+    refresh:"↻ Aktualisieren",bestSpot:"Bester Spot gerade",with:"mit Ø",ktsNow:"kts JETZT",
+    calm:"Flaute",light:"Leicht",getsGoing:"Geht los!",wingfoil:"Wingfoil!",perfect:"Perfekt!",strong:"Stark",heavy:"Heftig",storm:"Sturm!",
+    loading:"Laden...",error:"Fehler",
+    optimal:"✓ OPTIMAL",ok:"~ OK",noMatch:"✗ PASST NICHT",
+    spotsMap:"Einstiege & Karte",hide:"ausblenden",show:"anzeigen",
+    models:"Modelle",details:"Details",avg:"Ø SCHNITT",gusts:"Böen",
+    next:"Nächste",forecastTitle:"3-Tage Forecast · Peak · ab",goLabel:"= GO",
+    today:"Heute",tomorrow:"Morgen",dayAfter:"Übermorgen",
+    hotspotTitle:"🌍 Europa & Internationale Hotspots",spots:"Spots",
+    tip:"Gib mir ein Bier aus!",tipFooter:"Thanks for the coffee tip ☕",
+    locale:"de-AT"
+  },
+  en:{
+    greetMorn:"Good morning",greetDay:"Hey there",greetEve:"Good evening",
+    cta:"ready to ride?",
+    tagline:"Live Wind · 6 Models · 3 Days",
+    desc:"Live average from ICON, GFS, ECMWF, GEM, MétéoFrance & JMA — Your home lakes + the best kite & wingfoil hotspots.",
+    refresh:"↻ Refresh",bestSpot:"Best spot right now",with:"avg Ø",ktsNow:"kts NOW",
+    calm:"Calm",light:"Light",getsGoing:"It's on!",wingfoil:"Wingfoil!",perfect:"Perfect!",strong:"Strong",heavy:"Heavy",storm:"Storm!",
+    loading:"Loading...",error:"Error",
+    optimal:"✓ OPTIMAL",ok:"~ OK",noMatch:"✗ WRONG DIR",
+    spotsMap:"Launch spots & map",hide:"hide",show:"show",
+    models:"Models",details:"Details",avg:"Ø AVG",gusts:"Gusts",
+    next:"Next",forecastTitle:"3-Day Forecast · Peak · from",goLabel:"= GO",
+    today:"Today",tomorrow:"Tomorrow",dayAfter:"Day after",
+    hotspotTitle:"🌍 Europe & International Hotspots",spots:"Spots",
+    tip:"Buy me a beer!",tipFooter:"Thanks for the coffee tip ☕",
+    locale:"en-GB"
+  },
+  es:{
+    greetMorn:"Buenos días",greetDay:"¡Hola!",greetEve:"Buenas tardes",
+    cta:"¿vamos al agua?",
+    tagline:"Viento en vivo · 6 Modelos · 3 Días",
+    desc:"Promedio en vivo de ICON, GFS, ECMWF, GEM, MétéoFrance & JMA — Tus lagos + los mejores spots de kite & wingfoil.",
+    refresh:"↻ Actualizar",bestSpot:"Mejor spot ahora",with:"Ø prom.",ktsNow:"kts AHORA",
+    calm:"Calma",light:"Suave",getsGoing:"¡Arranca!",wingfoil:"¡Wingfoil!",perfect:"¡Perfecto!",strong:"Fuerte",heavy:"Intenso",storm:"¡Tormenta!",
+    loading:"Cargando...",error:"Error",
+    optimal:"✓ ÓPTIMO",ok:"~ OK",noMatch:"✗ MAL DIR",
+    spotsMap:"Entradas & mapa",hide:"ocultar",show:"mostrar",
+    models:"Modelos",details:"Detalles",avg:"Ø PROM",gusts:"Ráfagas",
+    next:"Próximas",forecastTitle:"Pronóstico 3 días · Pico · desde",goLabel:"= GO",
+    today:"Hoy",tomorrow:"Mañana",dayAfter:"Pasado",
+    hotspotTitle:"🌍 Europa & Hotspots Internacionales",spots:"Spots",
+    tip:"¡Invítame una cerveza!",tipFooter:"Gracias por la propina ☕",
+    locale:"es-ES"
+  },
+  fr:{
+    greetMorn:"Bonjour",greetDay:"Salut !",greetEve:"Bonsoir",
+    cta:"on va rider ?",
+    tagline:"Vent en direct · 6 Modèles · 3 Jours",
+    desc:"Moyenne en direct de ICON, GFS, ECMWF, GEM, MétéoFrance & JMA — Tes lacs + les meilleurs spots de kite & wingfoil.",
+    refresh:"↻ Rafraîchir",bestSpot:"Meilleur spot maintenant",with:"Ø moy.",ktsNow:"kts MAINTENANT",
+    calm:"Calme",light:"Léger",getsGoing:"Ça démarre !",wingfoil:"Wingfoil !",perfect:"Parfait !",strong:"Fort",heavy:"Violent",storm:"Tempête !",
+    loading:"Chargement...",error:"Erreur",
+    optimal:"✓ OPTIMAL",ok:"~ OK",noMatch:"✗ MAUVAIS",
+    spotsMap:"Accès & carte",hide:"masquer",show:"afficher",
+    models:"Modèles",details:"Détails",avg:"Ø MOY",gusts:"Rafales",
+    next:"Prochaines",forecastTitle:"Prévisions 3 jours · Pic · à partir de",goLabel:"= GO",
+    today:"Aujourd'hui",tomorrow:"Demain",dayAfter:"Après-demain",
+    hotspotTitle:"🌍 Europe & Hotspots Internationaux",spots:"Spots",
+    tip:"Offre-moi une bière !",tipFooter:"Merci pour le pourboire ☕",
+    locale:"fr-FR"
+  }
+};
+
+let lang='de';
+function t(key){return I18N[lang]?.[key]||I18N.de[key]||key}
+function setLang(l){
+  lang=l;
+  document.querySelectorAll('.lang-btn').forEach(b=>{b.classList.toggle('active',b.textContent===l.toUpperCase())});
+  document.getElementById('tipText').textContent=t('tip');
+  document.querySelector('.header-tag span:last-child').textContent=t('tagline');
+  document.querySelector('.header p').textContent=t('desc');
+  document.querySelector('.refresh-btn').textContent=t('refresh');
+  document.querySelector('.hotspot-header h2').innerHTML=`${t('hotspotTitle')} <span class="hs-count" id="hotspotCount"></span>`;
+  init();renderAll();
+  // Store preference
+  try{localStorage.setItem('windlang',l)}catch(e){}
+}
+
+// Detect browser lang or stored preference
+try{
+  const stored=localStorage.getItem('windlang');
+  if(stored&&I18N[stored])lang=stored;
+  else{const bl=navigator.language?.slice(0,2);if(bl&&I18N[bl])lang=bl;}
+}catch(e){}
+
 init();renderAll();fetchAllLakes();setInterval(updFooter,60000);
+// Set initial lang UI
+setLang(lang);
 </script>
 </body>
 </html>
