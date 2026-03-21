@@ -44,6 +44,7 @@ body{min-height:100vh;background:linear-gradient(160deg,var(--bg-deep) 0%,var(--
 .lake-card{background:linear-gradient(135deg,var(--card-bg) 0%,var(--card-bg2) 100%);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:20px;overflow:hidden;transition:transform .3s ease,box-shadow .3s ease;opacity:0;animation:fadeSlideUp .6s ease both}
 .lake-card:nth-child(1){animation-delay:.14s}.lake-card:nth-child(2){animation-delay:.22s}.lake-card:nth-child(3){animation-delay:.30s}.lake-card:nth-child(4){animation-delay:.38s}.lake-card:nth-child(5){animation-delay:.46s}
 .lake-card:nth-child(6){animation-delay:.54s}
+.lake-card:nth-child(n+7){animation-delay:.6s}
 .lake-card:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,.4)}
 .go-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 8px;border-radius:20px;background:var(--go-glow);border:1px solid rgba(34,211,238,.3);font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:var(--go-color);letter-spacing:1px;text-transform:uppercase;animation:glowPulse 2.5s ease infinite;margin-left:8px;white-space:nowrap}
 .go-badge .go-dot{width:6px;height:6px;border-radius:50%;background:var(--go-color);box-shadow:0 0 6px var(--go-color)}
@@ -145,7 +146,7 @@ body{min-height:100vh;background:linear-gradient(160deg,var(--bg-deep) 0%,var(--
   <div class="header">
     <div class="header-tag"><span style="font-size:28px">🪁</span><span>Live Wind · 6 Modelle · 3 Tage</span></div>
     <h1 id="greeting"></h1>
-    <p>Live-Durchschnitt aus ICON, GFS, ECMWF, GEM, MétéoFrance &amp; JMA für deine Spots. Optimale Windrichtungen pro See — alles ab 8 kts leuchtet auf.</p>
+    <p>Live-Durchschnitt aus ICON, GFS, ECMWF, GEM, MétéoFrance &amp; JMA — Deine Homebase-Seen + die besten Kite &amp; Wingfoil Hotspots in Europa &amp; darüber hinaus.</p>
   </div>
   <div id="bestBanner" class="best-banner" style="display:none"></div>
   <div id="alertsBar" class="alerts-bar"></div>
@@ -210,16 +211,64 @@ const LAKES=[
     ],
     spotNote:"Drittgrößter See Deutschlands — viel Platz! Westwind bei Sturmtiefs, Föhn aus Süd, Ostwind im Hochsommer. Starkwind bringt schöne Welle. Prien & Chieming Wetterstationen checken. Tipp: Wolfgangsee-Indikator!",
     links:{windy:"https://www.windy.com/47.870/12.470?47.870,12.470,11",windyApp:"https://windy.app/forecast/f_47.870_12.470",windfinder:"https://www.windfinder.com/forecast/chiemsee_feldwies",windguru:"https://www.windguru.cz/49421"}},
-  {id:"podersdorf",name:"Podersdorf",subtitle:"Neusiedlersee",lat:47.854,lon:16.831,emoji:"🌬️",distance:"290 km",
-    mapZoom:12,bestDirs:["NW","W","SW","N"],okDirs:["NO","WNW"],
+  {id:"gardasee",name:"Gardasee",subtitle:"Lago di Garda",lat:45.720,lon:10.720,emoji:"🇮🇹",distance:"380 km",
+    mapZoom:11,bestDirs:["N","S"],okDirs:["NW","SO"],
     spots:[
-      {name:"Nordstrand (Hauptspot)",desc:"DER Kitespot Österreichs! Riesiger Stehbereich. NW auflandig. Nummern-Lycra Pflicht! 200m-Regel im Sommer.",lat:47.8580,lon:16.8330,type:"kite",parking:"Kostenpflichtiger Strandparkplatz (Tageskarte ~€5.80)"},
-      {name:"Lab (Nördliche Bucht)",desc:"Butterflaches Wasser in der Hauptsaison. Spiegelglatt — perfekt für Freestyle!",lat:47.8620,lon:16.8280,type:"kite",parking:"Über Nordstrand erreichbar"},
-      {name:"Campingbereich",desc:"Nur für angemeldete Camper — nicht öffentlich. Gute Conditions.",lat:47.8540,lon:16.8380,type:"kite",parking:"Campingplatz Podersdorf"},
-      {name:"Breitenbrunn",desc:"Alternative bei Südwind! Auflandig bei S/SO, konstant und warm. FKN Kiteverein Mitgliedschaft nötig.",lat:47.9440,lon:16.7410,type:"kite",parking:"Strandbad Breitenbrunn (Eintritt Mai-Sep)"}
+      {name:"Campagnola (Kitespot)",desc:"Morgens Pelér (N, 4-5 Bft). Nachmittags Ora böig. Steiniger Strand. Kite-Haftpflicht + Lizenz nötig!",lat:45.7550,lon:10.8130,type:"kite",parking:"Kostenpflichtiger Parkplatz am Spot"},
+      {name:"Navene / Tunnel (Kiteclub)",desc:"Nachmittags-Spot bei Ora (S). Kiteclub Malcesine — Tageskarte €20 + Jahresgebühr €100. Tunnel-Start nur für Erfahrene!",lat:45.7680,lon:10.8100,type:"kite",parking:"Kostenpflichtiger Parkplatz, 200m nördlich Ausweichparkplatz"},
+      {name:"Campione del Garda",desc:"Westufer-Kitespot. Ora nachmittags konstant & weniger böig. Sportverein Kite Campione verwaltet.",lat:45.7360,lon:10.7540,type:"kite",parking:"Parkplatz Campione (kostenpflichtig, früh kommen!)"},
+      {name:"Torbole / Conca d'Oro",desc:"Wingfoil & Windsurf bei Ora. Kiten verboten! Yachthafen als Einstieg. Gute Infrastruktur.",lat:45.8720,lon:10.8740,type:"wing",parking:"Kostenpflichtige Parkplätze am Hafen"},
+      {name:"Malcesine / Busparkplatz",desc:"Pelér-Morgenspot für Wing & Windsurf. Ora hier zu schwach. Kite per Bootsshuttle.",lat:45.7630,lon:10.8090,type:"wing",parking:"Busparkplatz Malcesine (kostenpflichtig)"}
     ],
-    spotNote:"Österreichs Kite-Mekka! Riesiges Stehrevier, Flachwasser. Hauptwind NW. Bei S/SO → nach Breitenbrunn wechseln! Worldcup-Spot. April-Oktober. Wind kann sich rasant ändern — Blinkzeichen am Ufer beachten!",
-    links:{windy:"https://www.windy.com/47.854/16.831?47.854,16.831,12",windyApp:"https://windy.app/forecast/f_47.854_16.831",windfinder:"https://www.windfinder.com/forecast/podersdorf_am_see_neusiedler_see",windguru:"https://www.windguru.cz/46018"}}
+    spotNote:"2 Winde täglich: Pelér (N, morgens bis ~11h, bis 25kts) + Ora (S, ab Mittag bis Abend, konstant). Kiten nur an 2 öffentlichen Spots + Lizenz & Versicherung Pflicht! Wingfoilen überall möglich. März-Oktober. Am WE überfüllt!",
+    links:{windy:"https://www.windy.com/45.720/10.720?45.720,10.720,10",windyApp:"https://windy.app/forecast/f_45.720_10.720",windfinder:"https://www.windfinder.com/forecast/gardasee_torbole",windguru:"https://www.windguru.cz/49955"}},
+  {id:"tarifa",name:"Tarifa",subtitle:"Wind-Hauptstadt Europas",lat:36.014,lon:-5.604,emoji:"🇪🇸",distance:"2500 km",
+    mapZoom:12,bestDirs:["O","W"],okDirs:["SO","SW"],
+    spots:[
+      {name:"Playa de Los Lances",desc:"Haupt-Kitespot. Langer breiter Strand für alle Level. Levante (O) & Poniente (W).",lat:36.0220,lon:-5.6150,type:"kite",parking:"Gratis Strandparkplätze"},
+      {name:"Valdevaqueros",desc:"Top-Spot bei allen Windrichtungen. Fortgeschrittene. Blick auf Afrika!",lat:36.0620,lon:-5.6830,type:"kite",parking:"Kostenpflichtiger Strandparkplatz"}
+    ],
+    spotNote:"~300 Windtage/Jahr! Levante (O) & Poniente (W) durch Straße von Gibraltar. April-Oktober Hauptsaison. 40+ Kiteschulen. Europas Kite-Mekka.",
+    links:{windy:"https://www.windy.com/36.014/-5.604?36.014,-5.604,12",windyApp:"https://windy.app/forecast/f_36.014_-5.604",windfinder:"https://www.windfinder.com/forecast/tarifa",windguru:"https://www.windguru.cz/54"}},
+  {id:"fuerteventura",name:"Fuerteventura",subtitle:"Kanaren-Paradies",lat:28.390,lon:-14.000,emoji:"🇪🇸",distance:"3400 km",
+    mapZoom:10,bestDirs:["N","NNO","NO"],okDirs:["NW"],
+    spots:[
+      {name:"Sotavento / Risco del Paso",desc:"Weltberühmte Lagune! Flachwasser, ideal zum Lernen. Trade Winds fast ganzjährig.",lat:28.0720,lon:-14.2280,type:"kite",parking:"Strandparkplatz (gratis)"},
+      {name:"Corralejo / Flag Beach",desc:"Konstanter Wind, gute Infrastruktur. Flachwasser & kleine Welle.",lat:28.7280,lon:-13.8620,type:"kite",parking:"Parkplätze entlang der Dünen"}
+    ],
+    spotNote:"Passatwinde NNO ganzjährig 15-30kts. 300+ Sonnentage. Sotavento-Lagune = Anfänger-Paradies. Weltcup-Location. Ganzjährig!",
+    links:{windy:"https://www.windy.com/28.390/-14.000?28.390,-14.000,10",windyApp:"https://windy.app/forecast/f_28.390_-14.000",windfinder:"https://www.windfinder.com/forecast/fuerteventura_costa_calma",windguru:"https://www.windguru.cz/50"}},
+  {id:"leucate",name:"Leucate",subtitle:"Südfrankreich",lat:42.862,lon:3.042,emoji:"🇫🇷",distance:"1300 km",
+    mapZoom:12,bestDirs:["NW","N"],okDirs:["W","S"],
+    spots:[
+      {name:"La Franqui",desc:"Kilometerlanger Sandstrand. Tramontane (NW) bis 40kts. Top für Freestyle & Wave.",lat:42.9210,lon:3.0420,type:"kite",parking:"Gratis Strandparkplatz La Franqui"},
+      {name:"Étang de Leucate",desc:"Flachwasser-Lagune. Perfekt zum Lernen & Foilen. Thermik-Wind im Sommer.",lat:42.8520,lon:3.0350,type:"wing",parking:"Parkplätze am Étang"}
+    ],
+    spotNote:"Tramontane (NW) & Marin (S) — 30+ Jahre Kite-Geschichte. April-Oktober. Lagune + Meer = alle Level. Surfschulen & Verleihe überall.",
+    links:{windy:"https://www.windy.com/42.862/3.042?42.862,3.042,12",windyApp:"https://windy.app/forecast/f_42.862_3.042",windfinder:"https://www.windfinder.com/forecast/leucate",windguru:"https://www.windguru.cz/227"}},
+  {id:"lo_stagnone",name:"Lo Stagnone",subtitle:"Sizilien",lat:37.867,lon:12.460,emoji:"🇮🇹",distance:"1400 km",
+    mapZoom:13,bestDirs:["NW","W","SW"],okDirs:["N","S"],
+    spots:[
+      {name:"Lo Stagnone Lagune",desc:"Riesige flache Lagune, Stehbereich. Perfekt zum Lernen! Warmes Wasser, Salzfelder-Kulisse.",lat:37.8670,lon:12.4600,type:"kite",parking:"Parkplätze an den Kiteschulen"}
+    ],
+    spotNote:"Flachste Lagune im Mittelmeer! Stehrevier, warm, Mai-September. Maestrale (NW) & Scirocco (S). Anfänger-Paradies mit Blick auf die Ägadischen Inseln.",
+    links:{windy:"https://www.windy.com/37.867/12.460?37.867,12.460,13",windyApp:"https://windy.app/forecast/f_37.867_12.460",windfinder:"https://www.windfinder.com/forecast/marsala_lo_stagnone",windguru:"https://www.windguru.cz/48127"}},
+  {id:"dakhla",name:"Dakhla",subtitle:"Marokko",lat:23.713,lon:-15.946,emoji:"🇲🇦",distance:"4200 km",
+    mapZoom:11,bestDirs:["N","NNO","NO"],okDirs:["NW","NNW"],
+    spots:[
+      {name:"Dakhla Lagune",desc:"Endlose Flachwasser-Lagune. Trade Winds 20-30kts. Stehbereich. Ganzjährig!",lat:23.7500,lon:-15.8500,type:"kite",parking:"Bei den Kite-Camps/Hotels"},
+      {name:"Speed Spot",desc:"Ultra-flaches Wasser für Speed-Rekorde & Foiling.",lat:23.7200,lon:-15.8800,type:"kite",parking:"Über Kite-Camp erreichbar"}
+    ],
+    spotNote:"Passat ganzjährig 20-30kts! Flache Lagune zwischen Wüste & Ozean. Wasser 19-24°C. März-November optimal. World-Class Freeride & Speed. Kite-Camps direkt an der Lagune.",
+    links:{windy:"https://www.windy.com/23.713/-15.946?23.713,-15.946,11",windyApp:"https://windy.app/forecast/f_23.713_-15.946",windfinder:"https://www.windfinder.com/forecast/dakhla",windguru:"https://www.windguru.cz/282"}},
+  {id:"el_gouna",name:"El Gouna",subtitle:"Ägypten / Rotes Meer",lat:27.211,lon:33.680,emoji:"🇪🇬",distance:"3200 km",
+    mapZoom:12,bestDirs:["N","NNW","NW"],okDirs:["NNO"],
+    spots:[
+      {name:"Mangroovy Beach / Elements",desc:"Haupt-Kitespot. Flachwasser-Lagune, Stehbereich, thermischer Nord-Wind. Perfekt zum Lernen & Foilen.",lat:27.2050,lon:33.6700,type:"kite",parking:"Am Kite-Center / Hotel"},
+      {name:"Sliders Cable Park",desc:"Alternative bei Flaute. Wakeboard-Park in El Gouna.",lat:27.1930,lon:33.6850,type:"wing",parking:"Parkplatz am Cable Park"}
+    ],
+    spotNote:"Thermischer Nordwind fast täglich 15-25kts. 360 Sonnentage! Warmes Wasser ganzjährig (22-28°C). Flachwasser-Lagune = Anfänger bis Pro. Ganzjährig, Peak April-Oktober.",
+    links:{windy:"https://www.windy.com/27.211/33.680?27.211,33.680,12",windyApp:"https://windy.app/forecast/f_27.211_33.680",windfinder:"https://www.windfinder.com/forecast/el_gouna",windguru:"https://www.windguru.cz/230"}}
 ];
 
 const MODELS=[
