@@ -43,6 +43,7 @@ body{min-height:100vh;background:linear-gradient(160deg,var(--bg-deep) 0%,var(--
 .lake-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:20px}
 .lake-card{background:linear-gradient(135deg,var(--card-bg) 0%,var(--card-bg2) 100%);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:20px;overflow:hidden;transition:transform .3s ease,box-shadow .3s ease;opacity:0;animation:fadeSlideUp .6s ease both}
 .lake-card:nth-child(1){animation-delay:.14s}.lake-card:nth-child(2){animation-delay:.22s}.lake-card:nth-child(3){animation-delay:.30s}.lake-card:nth-child(4){animation-delay:.38s}.lake-card:nth-child(5){animation-delay:.46s}
+.lake-card:nth-child(6){animation-delay:.54s}
 .lake-card:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,.4)}
 .go-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 8px;border-radius:20px;background:var(--go-glow);border:1px solid rgba(34,211,238,.3);font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:var(--go-color);letter-spacing:1px;text-transform:uppercase;animation:glowPulse 2.5s ease infinite;margin-left:8px;white-space:nowrap}
 .go-badge .go-dot{width:6px;height:6px;border-radius:50%;background:var(--go-color);box-shadow:0 0 6px var(--go-color)}
@@ -60,20 +61,30 @@ body{min-height:100vh;background:linear-gradient(160deg,var(--bg-deep) 0%,var(--
 .wind-loading{font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,.3);animation:pulse 1.5s ease infinite}
 .wind-error{font-family:'DM Mono',monospace;font-size:11px;color:#ef4444}
 /* Spot info section */
-.spot-info{padding:12px 20px;display:flex;gap:12px;align-items:stretch;flex-wrap:wrap}
-.spot-map{width:140px;height:140px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08);flex-shrink:0}
-.spot-map .leaflet-control-attribution{display:none!important}
-.spot-details{flex:1;min-width:180px;display:flex;flex-direction:column;gap:8px}
-.spot-wind-dirs{display:flex;flex-direction:column;gap:4px}
-.spot-wd-row{display:flex;align-items:center;gap:8px}
-.spot-wd-label{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.4);width:40px;flex-shrink:0}
-.spot-wd-dirs{display:flex;gap:3px;flex-wrap:wrap}
-.spot-wd-pill{padding:2px 8px;border-radius:8px;font-family:'DM Mono',monospace;font-size:10px;font-weight:600}
+.spot-toggle{padding:8px 24px;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--accent-dim);transition:color .2s;user-select:none}
+.spot-toggle:hover{color:var(--accent)}
+.spot-toggle .st-arrow{transition:transform .2s}
+.spot-info{padding:0 20px 12px;animation:fadeSlideUp .3s ease both}
+.spot-map-large{width:100%;height:220px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08);margin-bottom:12px}
+.spot-map-large .leaflet-control-attribution{display:none!important}
+.spot-entries{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.spot-entry{display:flex;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.04)}
+.spot-entry:hover{background:rgba(255,255,255,.05)}
+.se-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.se-icon.kite{background:rgba(255,100,100,.12);border:1px solid rgba(255,100,100,.2)}
+.se-icon.wing{background:rgba(0,200,255,.12);border:1px solid rgba(0,200,255,.2)}
+.se-body{flex:1;min-width:0}
+.se-name{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:rgba(255,255,255,.8);margin-bottom:2px}
+.se-desc{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.35);line-height:1.4}
+.se-parking{display:flex;align-items:center;gap:4px;margin-top:4px;font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.25)}
+.spot-dirs-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.spot-dirs-row .sdr-label{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.35)}
+.spot-wd-pill{padding:2px 8px;border-radius:8px;font-family:'DM Mono',monospace;font-size:10px;font-weight:600;display:inline-block}
 .spot-wd-pill.best{background:rgba(34,211,238,.15);color:#22d3ee;border:1px solid rgba(34,211,238,.25)}
 .spot-wd-pill.ok{background:rgba(255,255,255,.05);color:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.08)}
-.spot-note{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.35);line-height:1.5}
-/* Windrose mini */
-.windrose-wrap{width:80px;height:80px;flex-shrink:0;position:relative}
+.spot-note{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.35);line-height:1.5;padding:8px 0 0}
+.windrose-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.windrose-wrap{width:80px;height:80px;flex-shrink:0}
 .windrose-wrap svg{width:100%;height:100%}
 /* Hourly + forecast */
 .section-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dimmer);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase}
@@ -155,29 +166,59 @@ body{min-height:100vh;background:linear-gradient(160deg,var(--bg-deep) 0%,var(--
 const GO=8;
 const LAKES=[
   {id:"wallersee",name:"Wallersee",subtitle:"Hauptspot",lat:47.916,lon:13.145,emoji:"⭐",distance:"8 km",
-    mapZoom:13,
-    bestDirs:["O","W","SW"],okDirs:["NO","WSW"],
-    spotNote:"Ost-West ausgerichtet. Ostwind: Einstieg Strandbad Seekirchen (onshore). West/SW: Einstieg Neumarkt. Nur außerhalb Badesaison! Höhelaufen Pflicht.",
+    mapZoom:13,bestDirs:["O","W","SW"],okDirs:["NO","WSW"],
+    spots:[
+      {name:"Strandbad Seekirchen",desc:"Haupt-Kitespot bei Ostwind (onshore). Steg als Einstieg. Nur außerhalb Badesaison!",lat:47.9188,lon:13.1333,type:"kite",parking:"Parkplätze am Strandbad, ausreichend vorhanden"},
+      {name:"Fenningerspitz / Camping",desc:"Einstieg bei Westwind, auch im Sommer möglich. Kleine Wiese, Bäume = Luftwalzen beim Starten. Camping-Eintritt nötig.",lat:47.9105,lon:13.1595,type:"kite",parking:"Über Campingplatz (Eintritt)"},
+      {name:"Strandbad Neumarkt",desc:"Bester Spot bei SW-Wind. Nur außerhalb Badesaison. Restaurant vorhanden.",lat:47.9190,lon:13.1780,type:"kite",parking:"Gratis Parkplätze am Strandbad"},
+      {name:"Zell am Wallersee",desc:"NW-Seite, funktioniert bei fast allen Windrichtungen. Gut für Wingfoil.",lat:47.9255,lon:13.1475,type:"wing",parking:"Öffentlicher Parkplatz"}
+    ],
+    spotNote:"Ost-West ausgerichtet. Höhelaufen Pflicht! Kein Anfängerspot. Ostwind im Frühling/Herbst häufig, beginnt spät Vormittag, endet ~17h.",
     links:{windy:"https://www.windy.com/47.916/13.145?47.916,13.145,12",windyApp:"https://windy.app/forecast/f_47.916_13.145",windfinder:"https://www.windfinder.com/forecast/wallersee",windguru:"https://www.windguru.cz/48867"}},
   {id:"mondsee",name:"Mondsee",subtitle:"Thermik-Paradies",lat:47.821,lon:13.382,emoji:"🔥",distance:"22 km",
-    mapZoom:13,
-    bestDirs:["SO","O","OSO"],okDirs:["NW","W"],
-    spotNote:"Spezialwind 'Nebelwind' aus SO bei Thermik im Herbst/Frühling — bis 6 Bft! Einstieg Südufer. Nebel zwischen Attersee & Mondsee = GO Signal. Kein Anfängerspot.",
+    mapZoom:13,bestDirs:["SO","O","OSO"],okDirs:["NW","W"],
+    spots:[
+      {name:"Südufer / Badestrand",desc:"Haupt-Spot bei 'Nebelwind' aus SO. Sandbank zum Starten. Im Sommer von Badegästen überfüllt.",lat:47.8120,lon:13.3950,type:"kite",parking:"Parkplätze an der B154, früh kommen!"},
+      {name:"Fischzucht / Düse",desc:"Engstelle nördlich der Fischzucht — Düseneffekt verstärkt SO-Wind. Für Erfahrene.",lat:47.8145,lon:13.3880,type:"kite",parking:"Straßenparkplätze"},
+      {name:"Loibichl Nordufer",desc:"Wingfoil-Spot bei Ost-Wind. Schmaler steiniger Strand, böig am Ufer.",lat:47.8310,lon:13.3620,type:"wing",parking:"Seeparkplätze Loibichl"}
+    ],
+    spotNote:"Spezialwind 'Nebelwind': SO-Thermik wenn Nebel zwischen Attersee & Mondsee steht. Bis 6 Bft! Check 12er Horn Station & Mondsee Webcam. Frühling & Herbst. Kein Anfängerspot.",
     links:{windy:"https://www.windy.com/47.821/13.382?47.821,13.382,12",windyApp:"https://windy.app/forecast/f_47.821_13.382",windfinder:"https://www.windfinder.com/forecast/mondsee_salzkammergut",windguru:"https://www.windguru.cz/173094"}},
   {id:"wolfgangsee",name:"Wolfgangsee",subtitle:"Der Klassiker",lat:47.738,lon:13.408,emoji:"💎",distance:"30 km",
-    mapZoom:13,
-    bestDirs:["NW","W","WNW"],okDirs:["N"],
-    spotNote:"DER Starkwind-See! Kaltfronten aus NW bringen 5–9 Bft in Minuten. Spot 'Gamsjaga' bei Gschwand. Brunnwind (thermisch NW) für Leichtwind. Kein Anfängerspot — sehr begrenzte Launch-Area!",
+    mapZoom:13,bestDirs:["NW","W","WNW"],okDirs:["N"],
+    spots:[
+      {name:"Gamsjaga / Gschwand",desc:"DER Kitespot! Winziger Strand, max. 25m Leinen. Kaltfronten bringen 5-9 Bft. Felsiger Einstieg — Schuhe empfohlen!",lat:47.7435,lon:13.3780,type:"kite",parking:"Parkplatz neben Gasthof Gamsjaga (€ im Sommer). Wird bei Wind VOLL — früh kommen!"},
+      {name:"Abersee / Lindenstrand",desc:"Wingfoil bei Brunnwind (NW-Thermik, ~4 Bft). Webcam dort = bester Wind-Check.",lat:47.7380,lon:13.3950,type:"wing",parking:"Öffentlicher Parkplatz Abersee"}
+    ],
+    spotNote:"DER Starkwind-See! Kaltfronten aus NW = 5-9 Bft in Minuten. Brunnwind (NW-Thermik) für Leichtwind. Tipp: Wenn Wind am Chiemsee nachlässt → 45-60 Min. später geht's am Wolfgangsee los. KEIN Anfängerspot!",
     links:{windy:"https://www.windy.com/47.738/13.408?47.738,13.408,12",windyApp:"https://windy.app/forecast/f_47.738_13.408",windfinder:"https://www.windfinder.com/forecast/wolfgangsee_st_gilgen",windguru:"https://www.windguru.cz/48869"}},
   {id:"fuschlsee",name:"Fuschlsee",subtitle:"Quick Session",lat:47.798,lon:13.296,emoji:"⚡",distance:"14 km",
-    mapZoom:14,
-    bestDirs:["O","W"],okDirs:["SO","NW"],
-    spotNote:"Ost-West ausgerichtet. Geheimtipp unter Wingfoilern — überschaubare Größe, aber gute Thermik. Einstieg Badeplatz Wesenauer oder Fuschlseebad. Sturmfronten aus W ideal zum Wingfoilen.",
+    mapZoom:14,bestDirs:["O","W"],okDirs:["SO","NW"],
+    spots:[
+      {name:"Badeplatz Wesenauer",desc:"Wingfoil-Hauptspot. Gebühr. Guter Einstieg, überschaubar.",lat:47.7960,lon:13.2850,type:"wing",parking:"Kostenpflichtiger Parkplatz Wesenauer"},
+      {name:"Fuschlseebad",desc:"Öffentlicher Bereich neben dem Seebad. Wenige Gehminuten vom Parkplatz.",lat:47.7975,lon:13.2920,type:"wing",parking:"Parkplatz Fuschlseebad (kostenpflichtig)"}
+    ],
+    spotNote:"Wingfoil-Geheimtipp! Ost-West ausgerichtet, überschaubare Größe. WING BOX Locals vor Ort als Ansprechpartner. Naturschutzzonen & private Badeplätze beachten!",
     links:{windy:"https://www.windy.com/47.798/13.296?47.798,13.296,12",windyApp:"https://windy.app/forecast/f_47.798_13.296",windfinder:"https://www.windfinder.com/forecast/fuschlsee",windguru:"https://www.windguru.cz/1354071"}},
+  {id:"chiemsee",name:"Chiemsee",subtitle:"Bayerisches Meer",lat:47.870,lon:12.470,emoji:"🏔️",distance:"60 km",
+    mapZoom:11,bestDirs:["W","WNW","NW"],okDirs:["WSW","O","NO"],
+    spots:[
+      {name:"Chieming (Kitespot)",desc:"Offizieller Kitespot bei Westwind! Vor der Frauenklinik. Breiter Kiesstrand, Flachwasser, Stehbereich. Welle bei Starkwind bis 1.5m!",lat:47.8680,lon:12.5310,type:"kite",parking:"Parkplätze direkt am Spot, kostenlos"},
+      {name:"Feldwies / Übersee",desc:"Windsurf & Wingfoil bei W bis NNW. Komfortabler Einstieg, Rasenfläche, Sand-/Kiesstrand. Gemäßigter als Chieming.",lat:47.8420,lon:12.4820,type:"wing",parking:"Julius-Exter-Promenade — Parkplätze am Spot (A8 Abfahrt Grabenstätt)"},
+      {name:"Seebruck",desc:"Ostwind-Spot am Nordufer. Kiten & Wingfoilen bei O/NO-Wind.",lat:47.9290,lon:12.4700,type:"kite",parking:"Öffentlicher Parkplatz Seebruck"},
+      {name:"Gstadt",desc:"Alternative bei Ostwind, ruhiger als Seebruck.",lat:47.9100,lon:12.4300,type:"wing",parking:"Parkplätze am Seeufer"}
+    ],
+    spotNote:"Drittgrößter See Deutschlands — viel Platz! Westwind bei Sturmtiefs, Föhn aus Süd, Ostwind im Hochsommer. Starkwind bringt schöne Welle. Prien & Chieming Wetterstationen checken. Tipp: Wolfgangsee-Indikator!",
+    links:{windy:"https://www.windy.com/47.870/12.470?47.870,12.470,11",windyApp:"https://windy.app/forecast/f_47.870_12.470",windfinder:"https://www.windfinder.com/forecast/chiemsee_feldwies",windguru:"https://www.windguru.cz/49421"}},
   {id:"podersdorf",name:"Podersdorf",subtitle:"Neusiedlersee",lat:47.854,lon:16.831,emoji:"🌬️",distance:"290 km",
-    mapZoom:12,
-    bestDirs:["NW","W","SW","N"],okDirs:["NO","S"],
-    spotNote:"Österreichs Kite-Mekka! Riesiges Stehrevier, Flachwasser. Hauptwind NW (auflandig). Süd = ablandig & böig nahe Ufer. Bei S/SO besser nach Breitenbrunn wechseln. Nummern-Lycra Pflicht! 200m-Regel im Sommer.",
+    mapZoom:12,bestDirs:["NW","W","SW","N"],okDirs:["NO","WNW"],
+    spots:[
+      {name:"Nordstrand (Hauptspot)",desc:"DER Kitespot Österreichs! Riesiger Stehbereich. NW auflandig. Nummern-Lycra Pflicht! 200m-Regel im Sommer.",lat:47.8580,lon:16.8330,type:"kite",parking:"Kostenpflichtiger Strandparkplatz (Tageskarte ~€5.80)"},
+      {name:"Lab (Nördliche Bucht)",desc:"Butterflaches Wasser in der Hauptsaison. Spiegelglatt — perfekt für Freestyle!",lat:47.8620,lon:16.8280,type:"kite",parking:"Über Nordstrand erreichbar"},
+      {name:"Campingbereich",desc:"Nur für angemeldete Camper — nicht öffentlich. Gute Conditions.",lat:47.8540,lon:16.8380,type:"kite",parking:"Campingplatz Podersdorf"},
+      {name:"Breitenbrunn",desc:"Alternative bei Südwind! Auflandig bei S/SO, konstant und warm. FKN Kiteverein Mitgliedschaft nötig.",lat:47.9440,lon:16.7410,type:"kite",parking:"Strandbad Breitenbrunn (Eintritt Mai-Sep)"}
+    ],
+    spotNote:"Österreichs Kite-Mekka! Riesiges Stehrevier, Flachwasser. Hauptwind NW. Bei S/SO → nach Breitenbrunn wechseln! Worldcup-Spot. April-Oktober. Wind kann sich rasant ändern — Blinkzeichen am Ufer beachten!",
     links:{windy:"https://www.windy.com/47.854/16.831?47.854,16.831,12",windyApp:"https://windy.app/forecast/f_47.854_16.831",windfinder:"https://www.windfinder.com/forecast/podersdorf_am_see_neusiedler_see",windguru:"https://www.windguru.cz/46018"}}
 ];
 
@@ -237,7 +278,7 @@ function buildWindrose(lake,currentDir){
   return`<div class="windrose-wrap"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="36" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/><circle cx="40" cy="40" r="18" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="0.5"/>${paths}${arrow}<circle cx="40" cy="40" r="2" fill="rgba(255,255,255,0.2)"/>${lblHTML}</svg></div>`;
 }
 
-const store={},exp={};
+const store={},exp={},spotExp={};
 let maps={};
 
 function init(){
@@ -323,20 +364,35 @@ function renderCard(lake){
   else if(err)wH='<div class="wind-error">Fehler</div>';
   else wH=`<div class="wind-num">${aS(ad,18,_c)}<span class="val" style="color:${_c}">${ak!=null?ak.toFixed(0):'–'}</span><span class="unit">kts</span></div><div class="wind-meta">${ag!=null?`<span class="gust">G${ag.toFixed(0)}</span>`:''}<span class="label" style="color:${_c}">${d2d(ad)} · ${_l}</span>${dirMatchBadge}</div>`;
 
-  // Spot info: map + windrose + directions
-  const bestPills=lake.bestDirs.map(d=>`<span class="spot-wd-pill best">${d}</span>`).join('');
-  const okPills=lake.okDirs.map(d=>`<span class="spot-wd-pill ok">${d}</span>`).join('');
-  const spotHTML=`<div class="spot-info">
-    <div class="spot-map" id="map-${lake.id}"></div>
-    ${buildWindrose(lake,ad)}
-    <div class="spot-details">
-      <div class="spot-wind-dirs">
-        <div class="spot-wd-row"><span class="spot-wd-label">Best:</span><div class="spot-wd-dirs">${bestPills}</div></div>
-        <div class="spot-wd-row"><span class="spot-wd-label">OK:</span><div class="spot-wd-dirs">${okPills}</div></div>
-      </div>
-      <div class="spot-note">${lake.spotNote}</div>
-    </div>
+  // Spot info: expandable map + entries
+  const sExp=spotExp[lake.id];
+  const spotToggle=`<div class="spot-toggle" onclick="togSpot('${lake.id}')">
+    <svg width="10" height="10" viewBox="0 0 10 10"><path d="M3 1L7 5L3 9" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" class="st-arrow" style="transform:rotate(${sExp?90:0}deg)"/></svg>
+    🗺️ ${lake.spots?lake.spots.length:0} Einstiege & Karte ${sExp?'ausblenden':'anzeigen'}
   </div>`;
+
+  let spotHTML='';
+  if(sExp&&lake.spots){
+    const bestPills=lake.bestDirs.map(d=>`<span class="spot-wd-pill best">${d}</span>`).join(' ');
+    const okPills=lake.okDirs.map(d=>`<span class="spot-wd-pill ok">${d}</span>`).join(' ');
+    const entries=lake.spots.map(sp=>{
+      const icon=sp.type==='kite'?'🪁':'🪽';
+      const cls=sp.type==='kite'?'kite':'wing';
+      return`<div class="spot-entry"><div class="se-icon ${cls}">${icon}</div><div class="se-body"><div class="se-name">${sp.name}</div><div class="se-desc">${sp.desc}</div>${sp.parking?`<div class="se-parking">🅿️ ${sp.parking}</div>`:''}</div></div>`;
+    }).join('');
+    spotHTML=`<div class="spot-info">
+      <div class="spot-map-large" id="map-${lake.id}"></div>
+      <div class="windrose-row">
+        ${buildWindrose(lake,ad)}
+        <div>
+          <div class="spot-dirs-row"><span class="sdr-label">Best:</span>${bestPills}</div>
+          <div class="spot-dirs-row"><span class="sdr-label">OK:</span>${okPills}</div>
+        </div>
+      </div>
+      <div class="spot-entries">${entries}</div>
+      <div class="spot-note">💡 ${lake.spotNote}</div>
+    </div>`;
+  }
 
   let h8='';
   if(wd&&wd.h8.length){
@@ -358,21 +414,32 @@ function renderCard(lake){
 
   return`<div class="lake-card ${isGo?'is-go':''}" style="border:1px solid ${isGo?'var(--go-color)33':'rgba(255,255,255,0.08)'}">
     <div class="card-header"><div><div class="lake-name"><span style="font-size:22px">${lake.emoji}</span><h2>${lake.name}</h2>${badge}</div><span class="lake-sub">${lake.subtitle} · ${lake.distance}</span></div><div class="wind-big">${wH}</div></div>
-    ${spotHTML}${h8}${fc}${mt}${md}<div class="card-sep"></div><div class="services">${svcs}</div></div>`;
+    ${spotToggle}${spotHTML}${h8}${fc}${mt}${md}<div class="card-sep"></div><div class="services">${svcs}</div></div>`;
 }
 
 function initMaps(){
-  // Destroy old maps
   Object.values(maps).forEach(m=>{try{m.remove()}catch(e){}});
   maps={};
   LAKES.forEach(lake=>{
+    if(!spotExp[lake.id])return;
     const el=document.getElementById('map-'+lake.id);
-    if(!el||el.children.length>0)return;
+    if(!el||el._leaflet_id)return;
     try{
-      const map=L.map(el,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,touchZoom:false}).setView([lake.lat,lake.lon],lake.mapZoom);
+      const map=L.map(el,{zoomControl:false,attributionControl:false}).setView([lake.lat,lake.lon],lake.mapZoom);
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map);
-      L.circleMarker([lake.lat,lake.lon],{radius:5,color:'#22d3ee',fillColor:'#22d3ee',fillOpacity:0.8,weight:2}).addTo(map);
+      // Add spot markers
+      if(lake.spots){
+        const bounds=[];
+        lake.spots.forEach(sp=>{
+          const col=sp.type==='kite'?'#ff6b6b':'#22d3ee';
+          const icon=sp.type==='kite'?'🪁':'🪽';
+          L.circleMarker([sp.lat,sp.lon],{radius:7,color:col,fillColor:col,fillOpacity:0.7,weight:2}).addTo(map).bindPopup(`<div style="font-family:'DM Sans',sans-serif;font-size:12px"><strong>${sp.name}</strong><br><span style="font-size:11px;color:#666">${sp.desc}</span>${sp.parking?'<br><span style="font-size:10px;color:#999">🅿️ '+sp.parking+'</span>':''}</div>`,{maxWidth:250});
+          bounds.push([sp.lat,sp.lon]);
+        });
+        if(bounds.length>1){map.fitBounds(bounds,{padding:[30,30]});} 
+      }
       maps[lake.id]=map;
+      setTimeout(()=>map.invalidateSize(),200);
     }catch(e){}
   });
 }
@@ -383,6 +450,7 @@ function renderAll(){
   setTimeout(initMaps,100);
 }
 function tog(id){exp[id]=!exp[id];renderAll()}
+function togSpot(id){spotExp[id]=!spotExp[id];renderAll()}
 
 async function fetchAllLakes(){
   renderAll();
