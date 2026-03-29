@@ -61,7 +61,7 @@
   .lake-card{background:linear-gradient(135deg,var(--card-bg) 0%,var(--card-bg2) 100%);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:20px;overflow:hidden;transition:transform .3s ease,box-shadow .3s ease;opacity:0;animation:fadeSlideUp .6s ease both}
   .lake-card:nth-child(1){animation-delay:.14s}.lake-card:nth-child(2){animation-delay:.22s}
   .lake-card:nth-child(3){animation-delay:.30s}.lake-card:nth-child(4){animation-delay:.38s}
-  .lake-card:nth-child(5){animation-delay:.46s}
+  .lake-card:nth-child(5){animation-delay:.46s}.lake-card:nth-child(6){animation-delay:.54s}
   .lake-card:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,.4)}
   .lake-card.is-go{animation-name:fadeSlideUp}
 
@@ -120,6 +120,13 @@
 
   .card-sep{height:1px;background:linear-gradient(90deg,transparent,var(--border-subtle),transparent)}
 
+  /* ICS Download Button */
+  .ics-btn{display:inline-flex;align-items:center;gap:7px;margin:0 24px 14px;padding:8px 16px;border-radius:10px;border:1px solid rgba(34,211,238,.3);background:rgba(34,211,238,.07);color:var(--go-color);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;width:calc(100% - 48px)}
+  .ics-btn:hover{background:rgba(34,211,238,.15);border-color:rgba(34,211,238,.5);transform:translateY(-1px)}
+  .ics-btn .ics-icon{font-size:14px}
+  .ics-btn .ics-label{flex:1}
+  .ics-btn .ics-sub{font-size:10px;font-family:'DM Mono',monospace;opacity:.6}
+
   .services{padding:6px 12px}
   .svc-link{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;text-decoration:none;transition:all .2s ease}
   .svc-link:hover{background:rgba(255,255,255,.06)}
@@ -132,12 +139,46 @@
 
   .footer{margin-top:48px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dimmest);letter-spacing:1px}
   .wind-arrow{transition:transform .5s ease}
+
+  /* Beer Button */
+  .beer-btn{position:fixed;top:18px;right:18px;z-index:100;display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:50px;background:rgba(255,170,0,.12);border:1px solid rgba(255,170,0,.35);color:#ffaa00;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;text-decoration:none;cursor:pointer;transition:all .25s;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 4px 20px rgba(0,0,0,.3)}
+  .beer-btn:hover{background:rgba(255,170,0,.22);border-color:rgba(255,170,0,.6);transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,170,0,.15)}
+  .beer-btn .beer-emoji{font-size:17px}
+
+  /* Contact Form */
+  .contact-section{margin-top:56px;animation:fadeSlideUp .6s ease .6s both}
+  .contact-section h2{font-family:'Anybody',sans-serif;font-weight:800;font-size:clamp(22px,4vw,32px);letter-spacing:-1px;margin-bottom:6px}
+  .contact-section h2 .grad{background:linear-gradient(90deg,#00c8ff,#00ffa0,#00c8ff);background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 4s linear infinite}
+  .contact-section p{font-size:13px;color:var(--text-dim);margin-bottom:24px;line-height:1.6}
+  .contact-card{background:linear-gradient(135deg,var(--card-bg) 0%,var(--card-bg2) 100%);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:28px}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:540px){.form-grid{grid-template-columns:1fr}}
+  .form-group{display:flex;flex-direction:column;gap:6px}
+  .form-group.full{grid-column:1/-1}
+  .form-group label{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px}
+  .form-group input,.form-group textarea,.form-group select{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:11px 14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s,background .2s;width:100%}
+  .form-group input::placeholder,.form-group textarea::placeholder{color:rgba(255,255,255,.2)}
+  .form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:rgba(0,200,255,.4);background:rgba(0,200,255,.04)}
+  .form-group textarea{resize:vertical;min-height:100px}
+  .form-group select option{background:#0a1628;color:#fff}
+  .form-submit{margin-top:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .btn-submit{background:linear-gradient(135deg,rgba(0,200,255,.15),rgba(0,255,160,.1));border:1px solid rgba(0,200,255,.3);border-radius:12px;padding:12px 28px;color:#00c8ff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .25s;white-space:nowrap}
+  .btn-submit:hover{background:linear-gradient(135deg,rgba(0,200,255,.25),rgba(0,255,160,.18));border-color:rgba(0,200,255,.5);transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,200,255,.15)}
+  .form-note{font-size:11px;color:rgba(255,255,255,.2);font-family:'DM Mono',monospace}
+  .form-success{display:none;padding:14px 18px;border-radius:12px;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.2);color:var(--go-color);font-size:13px;margin-top:14px}
+  .contact-section .header-tag{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .contact-section .header-tag span:last-child{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--accent-dim);text-transform:uppercase;letter-spacing:3px}
 </style>
 </head>
 <body>
 
 <div class="orb orb-1"></div>
 <div class="orb orb-2"></div>
+
+<a class="beer-btn" href="https://paypal.me/marcstickler" target="_blank" rel="noopener" title="Spendier mir ein Bier 🍺">
+  <span class="beer-emoji">🍺</span>
+  <span>Bier spendieren</span>
+</a>
 
 <div class="container">
   <div class="header">
@@ -154,6 +195,49 @@
   <div id="modelLegend" class="model-legend"></div>
   <button class="refresh-btn" onclick="fetchAllLakes()">↻ Aktualisieren</button>
   <div id="lakeGrid" class="lake-grid"></div>
+
+  <!-- Contact Form -->
+  <section class="contact-section">
+    <div class="header-tag">
+      <span style="font-size:24px">📍</span>
+      <span>Spot anfragen</span>
+    </div>
+    <h2><span class="grad">Deinen Spot</span> anfragen</h2>
+    <p>Du willst Winddaten für einen anderen Spot? Schreib mir — ich schaue, ob ich ihn ins Dashboard aufnehmen kann.</p>
+    <div class="contact-card">
+      <form id="contactForm" action="https://formsubmit.co/marc@marcstickler.at" method="POST" onsubmit="handleSubmit(event)">
+        <input type="hidden" name="_subject" value="Wind Dashboard – Spot Anfrage">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_template" value="table">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Dein Name</label>
+            <input type="text" name="name" placeholder="Maria Muster" required>
+          </div>
+          <div class="form-group">
+            <label>E-Mail</label>
+            <input type="email" name="email" placeholder="maria@beispiel.at" required>
+          </div>
+          <div class="form-group full">
+            <label>Gewünschter Spot / Ort</label>
+            <input type="text" name="spot" placeholder="z.B. Attersee, Zeller See, Bodensee …" required>
+          </div>
+          <div class="form-group full">
+            <label>Nachricht (optional)</label>
+            <textarea name="message" placeholder="Einstiegsstellen, bevorzugte Windrichtung, oder sonstige Infos …"></textarea>
+          </div>
+        </div>
+        <div class="form-submit">
+          <button type="submit" class="btn-submit">✉️ Anfrage senden</button>
+          <span class="form-note">Direkt an marc@marcstickler.at</span>
+        </div>
+      </form>
+      <div class="form-success" id="formSuccess">
+        ✅ Danke! Deine Anfrage wurde gesendet. Ich melde mich so bald wie möglich.
+      </div>
+    </div>
+  </section>
+
   <div id="footer" class="footer"></div>
 </div>
 
@@ -169,7 +253,9 @@ const LAKES=[
   {id:"fuschlsee",name:"Fuschlsee",subtitle:"Quick Session",lat:47.798,lon:13.296,emoji:"⚡",distance:"14 km",
     links:{windy:"https://www.windy.com/47.798/13.296?47.798,13.296,12",windyApp:"https://windy.app/forecast/f_47.798_13.296",windfinder:"https://www.windfinder.com/forecast/fuschlsee",windguru:"https://www.windguru.cz/1354071"}},
   {id:"podersdorf",name:"Podersdorf",subtitle:"Neusiedlersee",lat:47.854,lon:16.831,emoji:"🌬️",distance:"290 km",
-    links:{windy:"https://www.windy.com/47.854/16.831?47.854,16.831,12",windyApp:"https://windy.app/forecast/f_47.854_16.831",windfinder:"https://www.windfinder.com/forecast/podersdorf_am_see_neusiedler_see",windguru:"https://www.windguru.cz/46018"}}
+    links:{windy:"https://www.windy.com/47.854/16.831?47.854,16.831,12",windyApp:"https://windy.app/forecast/f_47.854_16.831",windfinder:"https://www.windfinder.com/forecast/podersdorf_am_see_neusiedler_see",windguru:"https://www.windguru.cz/46018"}},
+  {id:"traunsee",name:"Traunsee",subtitle:"Ebensee · Traunkirchen",lat:47.855,lon:13.794,emoji:"🏔️",distance:"55 km",entries:["Ebensee","Traunkirchen"],
+    links:{windy:"https://www.windy.com/47.855/13.794?47.855,13.794,12",windyApp:"https://windy.app/forecast/f_47.855_13.794",windfinder:"https://www.windfinder.com/forecast/ebensee_traunsee",windguru:"https://www.windguru.cz/1354069"}}
 ];
 
 const MODELS=[
@@ -343,12 +429,15 @@ function renderCard(lake){
   }
 
   const svcs=SVCS.map(s=>`<a class="svc-link" href="${lake.links[s.key]}" target="_blank" rel="noopener" style="--svc-color:${s.color}"><span class="svc-icon">${s.icon}</span><span class="svc-name">${s.label}</span><svg class="svc-arrow" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`).join('');
+  const entryHtml=lake.entries?`<div style="padding:6px 24px 0;display:flex;gap:6px;flex-wrap:wrap">${lake.entries.map(e=>`<span style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.4);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:3px 9px">⚓ ${e}</span>`).join('')}</div>`:'';
 
   const badge=isGo?`<span class="go-badge"><span class="go-dot"></span>GO!</span>`:fGoC>0?`<span class="go-badge" style="opacity:.55;animation:none"><span class="go-dot" style="background:#4ade80;box-shadow:0 0 6px #4ade80"></span>${fGoC}d GO</span>`:'';
 
+  const icsBtn=isGo?`<button class="ics-btn" onclick="makeICS(LAKES.find(l=>l.id==='${lake.id}'))"><span class="ics-icon">📅</span><span class="ics-label">Session eintragen</span><span class="ics-sub">→ Google Cal · iCal · Outlook</span></button>`:'';
+
   return`<div class="lake-card ${isGo?'is-go':''}" style="border:1px solid ${isGo?'var(--go-color)33':'rgba(255,255,255,0.08)'}">
     <div class="card-header"><div><div class="lake-name"><span style="font-size:22px">${lake.emoji}</span><h2>${lake.name}</h2>${badge}</div><span class="lake-sub">${lake.subtitle} · ${lake.distance}</span></div><div class="wind-big">${wH}</div></div>
-    ${h8}${fc}${mt}${md}<div class="card-sep"></div><div class="services">${svcs}</div></div>`;
+    ${entryHtml}${h8}${fc}${mt}${md}<div class="card-sep"></div>${icsBtn}<div class="services">${svcs}</div></div>`;
 }
 
 function renderAll(){
@@ -369,6 +458,58 @@ async function fetchAllLakes(){
     }catch(e){store[lake.id+'_err']=e.message}
     renderAll();
   }
+}
+
+function makeICS(lake){
+  const wd=store[lake.id];
+  const ak=wd?.cur?.avgKts,ag=wd?.cur?.avgGKts,ad=wd?.cur?.avgDir;
+  const now=new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  const fmt=d=>`${d.getUTCFullYear()}${pad(d.getUTCMonth()+1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+
+  // Session: today 09:00–17:00 local → use UTC offset for Austria (UTC+1 or +2)
+  const tzOff=now.getTimezoneOffset()*-1; // in minutes
+  const start=new Date(now);
+  start.setHours(9,0,0,0);
+  const end=new Date(now);
+  end.setHours(17,0,0,0);
+  const stamp=fmt(now);
+  const dtStart=fmt(new Date(start.getTime()-tzOff*60000));
+  const dtEnd=fmt(new Date(end.getTime()-tzOff*60000));
+
+  const dir=d2d(ad);
+  const summary=`🌊 ${lake.name} GO! — ${ak?.toFixed(0)??'?'} kts`;
+  const desc=`Wind: ${ak?.toFixed(1)??'?'} kts | Böen: ${ag?.toFixed(1)??'?'} kts | Richtung: ${dir}\\nSpot: ${lake.subtitle} (${lake.distance})\\n\\nWind Dashboard — marc@marcstickler.at`;
+
+  const ics=[
+    'BEGIN:VCALENDAR','VERSION:2.0',
+    'PRODID:-//Wind Dashboard Elsbethen//DE',
+    'CALSCALE:GREGORIAN','METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `DTSTAMP:${stamp}`,
+    `DTSTART:${dtStart}`,
+    `DTEND:${dtEnd}`,
+    `SUMMARY:${summary}`,
+    `DESCRIPTION:${desc}`,
+    `LOCATION:${lake.name}\\, Österreich`,
+    `UID:winddash-${lake.id}-${stamp}@marcstickler.at`,
+    'STATUS:CONFIRMED',
+    'END:VEVENT','END:VCALENDAR'
+  ].join('\r\n');
+
+  const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`${lake.id}-session.ics`;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url)},1000);
+}
+
+function handleSubmit(e){
+  const form=document.getElementById('contactForm');
+  const success=document.getElementById('formSuccess');
+  // Let FormSubmit handle the real POST; for UX show success after a moment
+  setTimeout(()=>{form.style.display='none';success.style.display='block'},800);
 }
 
 init();renderAll();fetchAllLakes();setInterval(updFooter,60000);
