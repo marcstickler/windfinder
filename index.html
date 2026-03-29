@@ -6,6 +6,8 @@
 <title>🪁 Wind Dashboard — Elsbethen</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   :root{
@@ -140,10 +142,91 @@
   .footer{margin-top:48px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dimmest);letter-spacing:1px}
   .wind-arrow{transition:transform .5s ease}
 
+  /* Legal Modal */
+  .legal-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:20px;overflow-y:auto}
+  .legal-modal-overlay.open{display:flex;align-items:flex-start;justify-content:center}
+  .legal-modal{background:linear-gradient(135deg,#0e1e38,#0a1628);border:1px solid rgba(255,255,255,.1);border-radius:20px;max-width:680px;width:100%;padding:36px;margin:auto;position:relative}
+  .legal-modal h2{font-family:'Anybody',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.5px;margin-bottom:20px;color:#fff}
+  .legal-modal h3{font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;color:rgba(0,200,255,.8);text-transform:uppercase;letter-spacing:1.5px;margin:18px 0 6px}
+  .legal-modal p,.legal-modal li{font-size:13px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:6px}
+  .legal-modal ul{padding-left:18px;margin-bottom:8px}
+  .legal-modal .warning-box{background:rgba(255,100,0,.08);border:1px solid rgba(255,100,0,.25);border-radius:10px;padding:14px 16px;margin:16px 0}
+  .legal-modal .warning-box p{color:rgba(255,150,50,.8);margin:0}
+  .legal-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:rgba(255,255,255,.5);transition:all .2s}
+  .legal-close:hover{background:rgba(255,255,255,.12);color:#fff}
+  /* Legal Footer Links */
+  .legal-links{display:flex;gap:16px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+  .legal-link{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.2);cursor:pointer;letter-spacing:1px;text-decoration:underline;text-underline-offset:3px;transition:color .2s}
+  .legal-link:hover{color:rgba(255,255,255,.5)}
+
   /* Beer Button */
-  .beer-btn{position:fixed;top:18px;right:18px;z-index:100;display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:50px;background:rgba(255,170,0,.12);border:1px solid rgba(255,170,0,.35);color:#ffaa00;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;text-decoration:none;cursor:pointer;transition:all .25s;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 4px 20px rgba(0,0,0,.3)}
-  .beer-btn:hover{background:rgba(255,170,0,.22);border-color:rgba(255,170,0,.6);transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,170,0,.15)}
-  .beer-btn .beer-emoji{font-size:17px}
+  @keyframes beerPulse{0%,100%{box-shadow:0 6px 30px rgba(0,0,0,.4),0 0 0 0 rgba(255,170,0,.6)}70%{box-shadow:0 6px 30px rgba(0,0,0,.4),0 0 0 16px rgba(255,170,0,0)}}
+  .beer-btn{position:fixed;top:16px;right:16px;z-index:100;display:flex;align-items:center;gap:10px;padding:14px 26px;border-radius:50px;background:linear-gradient(135deg,rgba(255,170,0,.28),rgba(255,100,0,.18));border:2px solid rgba(255,170,0,.75);color:#ffdd66;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:800;text-decoration:none;cursor:pointer;transition:all .25s;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);animation:beerPulse 2s ease infinite;letter-spacing:.3px;text-shadow:0 1px 8px rgba(255,170,0,.5)}
+  .beer-btn:hover{background:linear-gradient(135deg,rgba(255,170,0,.45),rgba(255,100,0,.30));border-color:#ffaa00;transform:translateY(-3px) scale(1.04);box-shadow:0 12px 36px rgba(255,170,0,.4)}
+  .beer-btn .beer-emoji{font-size:24px;filter:drop-shadow(0 0 6px rgba(255,170,0,.7))}
+  /* Sport Badges */
+  .sport-row{display:flex;gap:7px;flex-wrap:wrap;margin:0;padding:10px 20px 4px;align-items:center}
+  .sport-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;font-size:11.5px;font-weight:700;letter-spacing:.2px;white-space:nowrap}
+  .sport-badge.kite{background:rgba(255,170,0,.13);border:1px solid rgba(255,170,0,.45);color:#ffbb33}
+  .sport-badge.wing{background:rgba(0,200,255,.13);border:1px solid rgba(0,200,255,.45);color:#33d6ff}
+  .level-badge{display:inline-flex;align-items:center;padding:5px 11px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.2px;margin-left:2px}
+  .level-badge.beginner{background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.4);color:#4ade80}
+  .level-badge.intermediate{background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.4);color:#fbbf24}
+  .level-badge.expert{background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.45);color:#f87171}
+  /* Entry Detail */
+  .entry-item{margin-bottom:6px}
+  .entry-detail{font-size:11px;color:rgba(255,255,255,.45);margin:3px 0 0 4px;line-height:1.5}
+  .entry-detail .ep{color:rgba(100,220,255,.6)}
+  /* Webcam Button */
+  .cam-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:10px;background:rgba(0,200,255,.1);border:1px solid rgba(0,200,255,.35);color:#00c8ff;font-size:12px;font-weight:700;text-decoration:none;transition:all .2s;letter-spacing:.2px;margin-bottom:10px}
+  .cam-btn:hover{background:rgba(0,200,255,.22);border-color:rgba(0,200,255,.7);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,200,255,.2)}
+  .cam-btn .cam-dot{width:7px;height:7px;border-radius:50%;background:#00c8ff;animation:blink 1.4s ease infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  /* Bottom Beer Banner */
+  .beer-bottom{margin-top:48px;border-radius:20px;padding:28px 32px;background:linear-gradient(135deg,rgba(255,170,0,.1),rgba(255,100,0,.07));border:1px solid rgba(255,170,0,.25);display:flex;align-items:center;gap:20px;flex-wrap:wrap;animation:fadeSlideUp .6s ease .7s both}
+  .beer-bottom-icon{font-size:48px;filter:drop-shadow(0 0 16px rgba(255,170,0,.4));animation:float 3s ease-in-out infinite}
+  .beer-bottom-text{flex:1;min-width:180px}
+  .beer-bottom-text h3{font-family:'Anybody',sans-serif;font-weight:900;font-size:clamp(18px,3vw,24px);letter-spacing:-.5px;color:#ffaa00;margin-bottom:6px}
+  .beer-bottom-text p{font-size:13px;color:rgba(255,255,255,.45);line-height:1.6}
+  .beer-bottom-btn{display:inline-flex;align-items:center;gap:10px;padding:14px 28px;border-radius:14px;background:linear-gradient(135deg,rgba(255,170,0,.25),rgba(255,100,0,.18));border:2px solid rgba(255,170,0,.5);color:#ffaa00;font-family:'Anybody',sans-serif;font-size:16px;font-weight:800;text-decoration:none;transition:all .25s;white-space:nowrap;letter-spacing:-.3px}
+  .beer-bottom-btn:hover{background:linear-gradient(135deg,rgba(255,170,0,.4),rgba(255,100,0,.3));border-color:#ffaa00;transform:translateY(-3px);box-shadow:0 12px 32px rgba(255,170,0,.25)}
+
+  /* International Section */
+  .intl-section{margin-top:48px;animation:fadeSlideUp .6s ease .5s both}
+  .intl-toggle{display:flex;align-items:center;gap:14px;cursor:pointer;margin-bottom:20px;padding:18px 22px;border-radius:16px;background:linear-gradient(135deg,rgba(255,100,50,.06),rgba(255,180,0,.04));border:1px solid rgba(255,130,50,.15);transition:all .25s;user-select:none}
+  .intl-toggle:hover{background:linear-gradient(135deg,rgba(255,100,50,.1),rgba(255,180,0,.07));border-color:rgba(255,130,50,.3)}
+  .intl-toggle-icon{font-size:26px}
+  .intl-toggle-text{flex:1}
+  .intl-toggle-text h3{font-family:'Anybody',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.5px;color:#fff;margin-bottom:2px}
+  .intl-toggle-text p{font-size:12px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace}
+  .intl-chevron{font-size:18px;color:rgba(255,130,50,.6);transition:transform .3s}
+  .intl-chevron.open{transform:rotate(90deg)}
+  .intl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:20px}
+
+  /* Spot Map */
+  .spot-map-wrap{padding:10px 16px 0}
+  .spot-map{height:145px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08);cursor:grab}
+  .spot-map:active{cursor:grabbing}
+  .leaflet-container{background:#060d1f!important;font-family:'DM Sans',sans-serif}
+  .leaflet-tile-pane{filter:brightness(.85)}
+  .leaflet-control-zoom a{background:#0a1628!important;color:rgba(255,255,255,.6)!important;border-color:rgba(255,255,255,.1)!important}
+  .leaflet-control-zoom a:hover{background:#1a2a48!important;color:#fff!important}
+  .leaflet-popup-content-wrapper{background:#0e1e38;border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-family:'DM Sans',sans-serif;font-size:12px}
+  .leaflet-popup-tip{background:#0e1e38}
+
+  /* Wind Info */
+  .wind-info{padding:10px 20px 2px;display:flex;gap:5px;flex-wrap:wrap}
+  .wi-chip{display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-family:'DM Mono',monospace;font-size:10px;white-space:nowrap}
+  .wi-chip.dir{background:rgba(0,200,255,.07);border:1px solid rgba(0,200,255,.18);color:rgba(0,200,255,.85)}
+  .wi-chip.spd{background:rgba(74,222,128,.07);border:1px solid rgba(74,222,128,.18);color:rgba(74,222,128,.85)}
+  .wi-chip.sea{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.18);color:rgba(251,191,36,.75)}
+  .wi-chip.wat{background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.18);color:rgba(167,139,250,.75)}
+  .wind-tip{padding:3px 20px 6px;font-size:11px;color:rgba(255,255,255,.28);font-family:'DM Mono',monospace;line-height:1.45}
+
+  /* Entry Points */
+  .entry-chips{padding:8px 20px 4px;display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start}
+  .entry-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.45);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:all .2s}
+  .entry-chip:hover{background:rgba(255,200,0,.08);border-color:rgba(255,200,0,.25);color:rgba(255,200,0,.8)}
 
   /* Contact Form */
   .contact-section{margin-top:56px;animation:fadeSlideUp .6s ease .6s both}
@@ -168,6 +251,47 @@
   .form-success{display:none;padding:14px 18px;border-radius:12px;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.2);color:var(--go-color);font-size:13px;margin-top:14px}
   .contact-section .header-tag{display:flex;align-items:center;gap:10px;margin-bottom:8px}
   .contact-section .header-tag span:last-child{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--accent-dim);text-transform:uppercase;letter-spacing:3px}
+
+  /* Sponsor Section */
+  .sponsor-section{margin-top:52px;animation:fadeSlideUp .6s ease .55s both}
+  .sponsor-banner{border-radius:20px;padding:28px 32px;background:linear-gradient(135deg,rgba(255,170,0,.07) 0%,rgba(255,100,30,.05) 50%,rgba(255,170,0,.04) 100%);border:1px solid rgba(255,170,0,.2);display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+  .sponsor-icon{font-size:44px;flex-shrink:0;filter:drop-shadow(0 0 12px rgba(255,170,0,.3))}
+  .sponsor-text{flex:1;min-width:200px}
+  .sponsor-text h3{font-family:'Anybody',sans-serif;font-weight:800;font-size:clamp(18px,3vw,26px);letter-spacing:-.5px;margin-bottom:6px}
+  .sponsor-text h3 span{background:linear-gradient(90deg,#ffaa00,#ff6a00,#ffaa00);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 3s linear infinite}
+  .sponsor-text p{font-size:13px;color:rgba(255,255,255,.45);line-height:1.6;max-width:480px}
+  .sponsor-perks{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .sponsor-perk{font-family:'DM Mono',monospace;font-size:10px;padding:4px 10px;border-radius:8px;background:rgba(255,170,0,.08);border:1px solid rgba(255,170,0,.18);color:rgba(255,170,0,.8)}
+  .sponsor-cta{display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0}
+  .sponsor-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:12px;background:linear-gradient(135deg,rgba(255,170,0,.18),rgba(255,100,30,.12));border:1px solid rgba(255,170,0,.35);color:#ffaa00;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;text-decoration:none;transition:all .25s;white-space:nowrap}
+  .sponsor-btn:hover{background:linear-gradient(135deg,rgba(255,170,0,.28),rgba(255,100,30,.2));border-color:rgba(255,170,0,.6);transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,170,0,.15)}
+  .sponsor-slots{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.25);text-align:right}
+  .sponsor-logos{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;width:100%}
+  .sponsor-placeholder{height:36px;border-radius:8px;border:1px dashed rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;padding:0 16px;font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.15)}
+
+  /* Premium Teaser */
+  .premium-section{margin-top:52px;animation:fadeSlideUp .6s ease .58s both}
+  .premium-card{border-radius:20px;padding:30px 32px;background:linear-gradient(135deg,rgba(139,92,246,.08),rgba(59,130,246,.06));border:1px solid rgba(139,92,246,.2);position:relative;overflow:hidden}
+  .premium-card::before{content:'';position:absolute;top:-40%;right:-10%;width:300px;height:300px;background:radial-gradient(circle,rgba(139,92,246,.08),transparent 70%);pointer-events:none}
+  .premium-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3);font-family:'DM Mono',monospace;font-size:10px;color:rgba(139,92,246,.9);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px}
+  .premium-card h3{font-family:'Anybody',sans-serif;font-weight:800;font-size:clamp(18px,3vw,24px);letter-spacing:-.5px;margin-bottom:8px}
+  .premium-card h3 span{background:linear-gradient(90deg,#a78bfa,#60a5fa,#a78bfa);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 4s linear infinite}
+  .premium-card>p{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:20px;line-height:1.6}
+  .premium-features{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:22px}
+  .pf-item{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:rgba(139,92,246,.05);border:1px solid rgba(139,92,246,.12);border-radius:12px}
+  .pf-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+  .pf-text strong{display:block;font-size:12px;font-weight:600;color:rgba(255,255,255,.75);margin-bottom:2px}
+  .pf-text span{font-size:11px;color:rgba(255,255,255,.3);font-family:'DM Mono',monospace}
+  .premium-cta{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .premium-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:12px;background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(59,130,246,.15));border:1px solid rgba(139,92,246,.4);color:#a78bfa;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;text-decoration:none;cursor:pointer;transition:all .25s}
+  .premium-btn:hover{background:linear-gradient(135deg,rgba(139,92,246,.32),rgba(59,130,246,.25));border-color:rgba(139,92,246,.7);transform:translateY(-2px);box-shadow:0 8px 24px rgba(139,92,246,.2)}
+  .premium-soon{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.2)}
+
+  /* Language Switcher */
+  .lang-switcher{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:20px;animation:fadeSlideUp .6s ease .04s both}
+  .lang-btn{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:5px 11px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:rgba(255,255,255,.35);transition:all .2s;display:flex;align-items:center;gap:5px}
+  .lang-btn:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.65)}
+  .lang-btn.active{background:rgba(0,200,255,.1);border-color:rgba(0,200,255,.3);color:rgba(0,200,255,.9)}
 </style>
 </head>
 <body>
@@ -175,35 +299,100 @@
 <div class="orb orb-1"></div>
 <div class="orb orb-2"></div>
 
-<a class="beer-btn" href="https://paypal.me/marcstickler" target="_blank" rel="noopener" title="Spendier mir ein Bier 🍺">
+<a class="beer-btn" href="https://paypal.me/marcstickler" target="_blank" rel="noopener" title="🍺">
   <span class="beer-emoji">🍺</span>
-  <span>Bier spendieren</span>
+  <span id="beerLabel">Bier spendieren</span>
 </a>
 
 <div class="container">
   <div class="header">
     <div class="header-tag">
       <span style="font-size:28px">🪁</span>
-      <span>Live Wind · 6 Modelle · 3 Tage</span>
+      <span id="headerTag">Live Wind · 6 Modelle · 3 Tage</span>
     </div>
     <h1 id="greeting"></h1>
-    <p>Live-Durchschnitt aus ICON, GFS, ECMWF, GEM, MétéoFrance &amp; JMA für deine Spots. 3-Tage-Forecast — alles ab 8 kts leuchtet auf.</p>
+    <p id="headerDesc">Live-Durchschnitt aus ICON, GFS, ECMWF, GEM, MétéoFrance &amp; JMA für deine Spots. 3-Tage-Forecast — alles ab 8 kts leuchtet auf.</p>
   </div>
 
+  <div class="lang-switcher" id="langSwitcher"></div>
   <div id="bestBanner" class="best-banner" style="display:none"></div>
   <div id="alertsBar" class="alerts-bar"></div>
   <div id="modelLegend" class="model-legend"></div>
-  <button class="refresh-btn" onclick="fetchAllLakes()">↻ Aktualisieren</button>
+  <button class="refresh-btn" id="refreshBtn" onclick="fetchAllLakes()">↻ Aktualisieren</button>
   <div id="lakeGrid" class="lake-grid"></div>
+
+  <!-- International Spots -->
+  <div class="intl-section">
+    <div class="intl-toggle" onclick="toggleIntl()" id="intlToggle">
+      <span class="intl-toggle-icon">🌍</span>
+      <div class="intl-toggle-text">
+        <h3 id="intlTitle">Internationale Spots</h3>
+        <p id="intlSub">Tarifa · Fuerteventura · Leucate · Lo Stagnone · Dakhla · El Gouna</p>
+      </div>
+      <span class="intl-chevron" id="intlChevron">›</span>
+    </div>
+    <div id="intlGrid" class="intl-grid" style="display:none"></div>
+  </div>
+
+  <!-- Sponsor Section -->
+  <div class="sponsor-section">
+    <div class="sponsor-banner">
+      <div class="sponsor-icon">🤝</div>
+      <div class="sponsor-text">
+        <h3>Werde <span>Sponsor</span></h3>
+        <p>Du bist Kite-Shop, Schule, Verleih oder Brand? Dieses Dashboard wird täglich von Kitern & Wingfoilern in der Region genutzt. Zeig deinen Namen genau dort, wo die Community ist.</p>
+        <div class="sponsor-perks">
+          <span class="sponsor-perk">🔗 Logo + Link auf dem Dashboard</span>
+          <span class="sponsor-perk">📍 Spot-Branding möglich</span>
+          <span class="sponsor-perk">🌍 6 Sprachen · Multi-Region</span>
+          <span class="sponsor-perk">📅 Kalendereinträge mit deinem Namen</span>
+        </div>
+      </div>
+      <div class="sponsor-cta">
+        <a class="sponsor-btn" href="mailto:marc@marcstickler.at?subject=Wind%20Dashboard%20Sponsoring&body=Hallo%20Marc%2C%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20ein%20Sponsoring%20des%20Wind%20Dashboards.%0A%0AViele%20Gr%C3%BC%C3%9Fe" target="_blank">
+          ✉️ Jetzt anfragen
+        </a>
+        <span class="sponsor-slots">3 Plätze verfügbar</span>
+      </div>
+      <div class="sponsor-logos">
+        <div class="sponsor-placeholder">Dein Logo hier</div>
+        <div class="sponsor-placeholder">Dein Logo hier</div>
+        <div class="sponsor-placeholder">Dein Logo hier</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Premium Teaser -->
+  <div class="premium-section">
+    <div class="premium-card">
+      <div class="premium-badge">✨ Coming Soon</div>
+      <h3>Wind Dashboard <span>Pro</span> — was könnte kommen?</h3>
+      <p>Das Dashboard ist aktuell gratis und bleibt das für alle Basis-Features. Hier sind einige Ideen, was eine Premium-Version bieten könnte — ich bin gespannt auf euer Feedback!</p>
+      <div class="premium-features">
+        <div class="pf-item"><span class="pf-icon">🔔</span><div class="pf-text"><strong>Push-Benachrichtigungen</strong><span>Alarm wenn Wallersee GO! ist</span></div></div>
+        <div class="pf-item"><span class="pf-icon">📍</span><div class="pf-text"><strong>Custom Spots</strong><span>Eigene Koordinaten hinzufügen</span></div></div>
+        <div class="pf-item"><span class="pf-icon">📊</span><div class="pf-text"><strong>Wind-Historik</strong><span>Vergangene Sessions analysieren</span></div></div>
+        <div class="pf-item"><span class="pf-icon">🌡️</span><div class="pf-text"><strong>Wassertemperatur</strong><span>+Luftdruck, UV-Index, Regenradar</span></div></div>
+        <div class="pf-item"><span class="pf-icon">📅</span><div class="pf-text"><strong>Session-Planer</strong><span>Beste Tage der Woche auf einen Blick</span></div></div>
+        <div class="pf-item"><span class="pf-icon">🤝</span><div class="pf-text"><strong>Community</strong><span>Sessions teilen, Spot-Berichte</span></div></div>
+      </div>
+      <div class="premium-cta">
+        <a class="premium-btn" href="mailto:marc@marcstickler.at?subject=Wind%20Dashboard%20Pro%20-%20Interesse&body=Hallo%20Marc%2C%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20Wind%20Dashboard%20Pro%21%0A%0AMein%20Wunsch-Feature%3A%20" target="_blank">
+          ⚡ Interesse bekunden
+        </a>
+        <span class="premium-soon">Kein Spam. Nur eine Info wenn's losgeht.</span>
+      </div>
+    </div>
+  </div>
 
   <!-- Contact Form -->
   <section class="contact-section">
     <div class="header-tag">
       <span style="font-size:24px">📍</span>
-      <span>Spot anfragen</span>
+      <span id="contactTag">Spot anfragen</span>
     </div>
-    <h2><span class="grad">Deinen Spot</span> anfragen</h2>
-    <p>Du willst Winddaten für einen anderen Spot? Schreib mir — ich schaue, ob ich ihn ins Dashboard aufnehmen kann.</p>
+    <h2><span class="grad" id="contactH2a">Deinen Spot</span> <span id="contactH2b">anfragen</span></h2>
+    <p id="contactDesc">Du willst Winddaten für einen anderen Spot? Schreib mir — ich schaue, ob ich ihn ins Dashboard aufnehmen kann.</p>
     <div class="contact-card">
       <form id="contactForm" action="https://formsubmit.co/marc@marcstickler.at" method="POST" onsubmit="handleSubmit(event)">
         <input type="hidden" name="_subject" value="Wind Dashboard – Spot Anfrage">
@@ -211,25 +400,25 @@
         <input type="hidden" name="_template" value="table">
         <div class="form-grid">
           <div class="form-group">
-            <label>Dein Name</label>
-            <input type="text" name="name" placeholder="Maria Muster" required>
+            <label id="lblName">Dein Name</label>
+            <input type="text" id="inpName" name="name" placeholder="Maria Muster" required>
           </div>
           <div class="form-group">
-            <label>E-Mail</label>
+            <label id="lblEmail">E-Mail</label>
             <input type="email" name="email" placeholder="maria@beispiel.at" required>
           </div>
           <div class="form-group full">
-            <label>Gewünschter Spot / Ort</label>
-            <input type="text" name="spot" placeholder="z.B. Attersee, Zeller See, Bodensee …" required>
+            <label id="lblSpot">Gewünschter Spot / Ort</label>
+            <input type="text" id="inpSpot" name="spot" placeholder="z.B. Attersee, Zeller See, Bodensee …" required>
           </div>
           <div class="form-group full">
-            <label>Nachricht (optional)</label>
-            <textarea name="message" placeholder="Einstiegsstellen, bevorzugte Windrichtung, oder sonstige Infos …"></textarea>
+            <label id="lblMsg">Nachricht (optional)</label>
+            <textarea id="inpMsg" name="message" placeholder="Einstiegsstellen, bevorzugte Windrichtung, oder sonstige Infos …"></textarea>
           </div>
         </div>
         <div class="form-submit">
-          <button type="submit" class="btn-submit">✉️ Anfrage senden</button>
-          <span class="form-note">Direkt an marc@marcstickler.at</span>
+          <button type="submit" class="btn-submit" id="btnSend">✉️ Anfrage senden</button>
+          <span class="form-note" id="formNote">Direkt an marc@marcstickler.at</span>
         </div>
       </form>
       <div class="form-success" id="formSuccess">
@@ -238,24 +427,350 @@
     </div>
   </section>
 
+  <!-- Bottom Beer CTA -->
+  <div class="beer-bottom">
+    <div class="beer-bottom-icon">🍺</div>
+    <div class="beer-bottom-text">
+      <h3>Dieses Dashboard lebt von Bier-Spenden!</h3>
+      <p>Kein Abo, kein Login, keine Werbung — nur Wind & guter Wille. Wenn dir das Dashboard heute eine gute Session gebracht hat, gönn mir ein Bier. Das hält den Server am Laufen und mich motiviert. 🙏</p>
+    </div>
+    <a class="beer-bottom-btn" href="https://paypal.me/marcstickler" target="_blank" rel="noopener">🍺 Bier spendieren</a>
+  </div>
+
   <div id="footer" class="footer"></div>
+  <div class="legal-links">
+    <span class="legal-link" onclick="openLegal('impressum')">Impressum</span>
+    <span class="legal-link" onclick="openLegal('terms')">Terms &amp; Conditions</span>
+    <span class="legal-link" onclick="openLegal('privacy')">Datenschutz</span>
+  </div>
+</div>
+
+<!-- Impressum Modal -->
+<div class="legal-modal-overlay" id="modal-impressum" onclick="closeLegalOnOverlay(event)">
+  <div class="legal-modal">
+    <button class="legal-close" onclick="closeLegal('impressum')">✕</button>
+    <h2>📋 Impressum</h2>
+    <h3>Angaben gemäß § 5 ECG</h3>
+    <p><strong style="color:rgba(255,255,255,.75)">Marc Stickler</strong><br>
+    Elsbethen, Österreich<br>
+    E-Mail: <a href="mailto:marc@marcstickler.at" style="color:rgba(0,200,255,.7)">marc@marcstickler.at</a></p>
+    <h3>Art des Unternehmens</h3>
+    <p>Dieses Wind-Dashboard ist ein privates, nicht-kommerzielles Hobbyprojekt. Es besteht keine Gewerbeberechtigung. Das Angebot ist kostenlos und wird ohne kommerzielle Absicht betrieben.</p>
+    <h3>Haftung für Inhalte</h3>
+    <p>Die Winddaten stammen von der Open-Meteo API sowie verlinkten Drittdiensten (Windy, Windguru, Windfinder, Windy.App). Für die Richtigkeit, Vollständigkeit und Aktualität der Daten wird keine Haftung übernommen.</p>
+    <h3>Urheberrecht</h3>
+    <p>© 2024–2026 Marc Stickler. Alle Rechte vorbehalten. Die Inhalte dieser Website unterliegen dem österreichischen Urheberrecht.</p>
+    <h3>Streitschlichtung</h3>
+    <p>Die EU-Kommission stellt eine Plattform zur Online-Streitbeilegung bereit: <a href="https://ec.europa.eu/consumers/odr" target="_blank" style="color:rgba(0,200,255,.7)">ec.europa.eu/consumers/odr</a>. Wir sind nicht verpflichtet und nicht bereit, an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
+  </div>
+</div>
+
+<!-- Terms & Conditions Modal -->
+<div class="legal-modal-overlay" id="modal-terms" onclick="closeLegalOnOverlay(event)">
+  <div class="legal-modal">
+    <button class="legal-close" onclick="closeLegal('terms')">✕</button>
+    <h2>⚖️ Terms &amp; Conditions / Nutzungsbedingungen</h2>
+    <div class="warning-box">
+      <p>⚠️ <strong>WICHTIG:</strong> Wind- und Wassersport ist gefährlich. Die Nutzung dieses Dashboards erfolgt ausschließlich auf eigene Gefahr.</p>
+    </div>
+    <h3>1. Nutzung auf eigene Gefahr</h3>
+    <p>Alle auf diesem Dashboard angezeigten Winddaten sind Vorhersagewerte und können von den tatsächlichen Bedingungen vor Ort erheblich abweichen. Der Betreiber (Marc Stickler) übernimmt keinerlei Haftung für Unfälle, Verletzungen, Sachschäden oder sonstige Schäden, die im Zusammenhang mit der Nutzung dieses Dashboards oder dem Betreiben von Wassersport entstehen.</p>
+    <h3>2. Keine Garantie für Datengenauigkeit</h3>
+    <ul>
+      <li>Winddaten basieren auf Modellvorhersagen (ICON, GFS, ECMWF, GEM, MétéoFrance, JMA) via Open-Meteo API</li>
+      <li>Modelldaten können stark von der Realität abweichen, insbesondere in alpinem oder komplexem Gelände</li>
+      <li>Es wird keine Garantie für Verfügbarkeit, Aktualität oder Richtigkeit der Daten gegeben</li>
+    </ul>
+    <h3>3. Eigenverantwortung</h3>
+    <p>Jeder Nutzer ist selbst verantwortlich für die Einschätzung der Wetterbedingungen vor Ort. Vor jeder Wassersport-Session sind lokale Wetterberichte, offizielle Warnungen und die eigene Erfahrung maßgebend. Im Zweifelsfall: <strong style="color:rgba(255,150,50,.8)">NICHT FAHREN.</strong></p>
+    <h3>4. Drittanbieter</h3>
+    <p>Verlinkte Dienste (Windy, Windguru, Windfinder, Windy.App) haben eigene Nutzungsbedingungen, die eigenständig zu beachten sind. Der Betreiber übernimmt keine Verantwortung für die Inhalte dieser Drittanbieter.</p>
+    <h3>5. Kostenlosigkeit &amp; Änderungsvorbehalt</h3>
+    <p>Das Service ist derzeit kostenlos. Der Betreiber behält sich vor, das Angebot jederzeit zu ändern, einzuschränken oder einzustellen — auch ohne vorherige Ankündigung.</p>
+    <h3>6. Anwendbares Recht</h3>
+    <p>Es gilt österreichisches Recht. Gerichtsstand ist Salzburg, Österreich.</p>
+  </div>
+</div>
+
+<!-- Privacy Modal -->
+<div class="legal-modal-overlay" id="modal-privacy" onclick="closeLegalOnOverlay(event)">
+  <div class="legal-modal">
+    <button class="legal-close" onclick="closeLegal('privacy')">✕</button>
+    <h2>🔒 Datenschutzerklärung</h2>
+    <h3>Verantwortlicher</h3>
+    <p>Marc Stickler, Elsbethen, Österreich — marc@marcstickler.at</p>
+    <h3>Erhobene Daten</h3>
+    <p>Dieses Dashboard speichert <strong style="color:rgba(255,255,255,.75)">keine personenbezogenen Daten</strong>. Es werden keine Cookies gesetzt, kein Tracking durchgeführt, keine Analytics erhoben.</p>
+    <h3>Externe Dienste</h3>
+    <ul>
+      <li><strong style="color:rgba(255,255,255,.6)">Open-Meteo API</strong> — Winddaten, keine Weitergabe persönlicher Daten</li>
+      <li><strong style="color:rgba(255,255,255,.6)">Leaflet / OpenStreetMap</strong> — Kartendarstellung, Kacheln werden von CDN geladen</li>
+      <li><strong style="color:rgba(255,255,255,.6)">FormSubmit.co</strong> — Kontaktformular-Weiterleitung (nur bei aktiver Nutzung des Formulars)</li>
+      <li><strong style="color:rgba(255,255,255,.6)">Google Fonts</strong> — Schriftarten via CDN</li>
+    </ul>
+    <h3>Hosting</h3>
+    <p>Das Dashboard wird über GitHub Pages gehostet. Es gelten die <a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" target="_blank" style="color:rgba(0,200,255,.7)">Datenschutzrichtlinien von GitHub</a>.</p>
+    <h3>Kontakt bei Datenschutzfragen</h3>
+    <p><a href="mailto:marc@marcstickler.at" style="color:rgba(0,200,255,.7)">marc@marcstickler.at</a></p>
+  </div>
 </div>
 
 <script>
 const GO=8;
+let lang='de';
+
+const LANGS=[
+  {code:'de',flag:'🇦🇹',label:'DE'},
+  {code:'en',flag:'🇬🇧',label:'EN'},
+  {code:'es',flag:'🇪🇸',label:'ES'},
+  {code:'fr',flag:'🇫🇷',label:'FR'},
+  {code:'pt',flag:'🇵🇹',label:'PT'},
+  {code:'it',flag:'🇮🇹',label:'IT'}
+];
+
+const T={
+  de:{
+    headerTag:'Live Wind · 6 Modelle · 3 Tage',
+    desc:'Live-Durchschnitt aus ICON, GFS, ECMWF, GEM, MétéoFrance & JMA für deine Spots. 3-Tage-Forecast — alles ab 8 kts leuchtet auf.',
+    gm:'Guten Morgen',gd:'Servus',ge:'Guten Abend',gsub:'ab aufs Wasser?',
+    refresh:'↻ Aktualisieren',loading:'Laden...',error:'Fehler',
+    wc:'Flaute',wl:'Leicht',wgo:'Geht los!',wwf:'Wingfoil!',wp:'Perfekt!',ws:'Stark',wh:'Heftig',wst:'Sturm!',
+    days:['Heute','Morgen','Übermorgen'],nexth:'Nächste',
+    fc3:'3-Tage Forecast · Peak · ab',fcgo:'kts = GO',
+    mshow:'Modelle — Details anzeigen',mhide:'Modelle — Details ausblenden',avg:'Ø SCHNITT',gusts:'Böen',
+    best:'Bester Spot gerade:',bestwith:'mit Ø',now:'JETZT',
+    ics:'Session eintragen',icssub:'→ Google Cal · iCal · Outlook',
+    intlTitle:'Internationale Spots',
+    contactTag:'Spot anfragen',contactH2a:'Deinen Spot',contactH2b:'anfragen',
+    contactDesc:'Du willst Winddaten für einen anderen Spot? Schreib mir — ich schaue, ob ich ihn ins Dashboard aufnehmen kann.',
+    lblName:'Dein Name',lblEmail:'E-Mail',lblSpot:'Gewünschter Spot / Ort',lblMsg:'Nachricht (optional)',
+    phName:'Maria Muster',phSpot:'z.B. Attersee, Zeller See, Bodensee …',phMsg:'Einstiegsstellen, bevorzugte Windrichtung, oder sonstige Infos …',
+    btnSend:'✉️ Anfrage senden',formNote:'Direkt an marc@marcstickler.at',
+    formOk:'✅ Danke! Deine Anfrage wurde gesendet. Ich melde mich so bald wie möglich.',
+    beer:'Bier spendieren',
+    dirs:['N','NNO','NO','ONO','O','OSO','SO','SSO','S','SSW','SW','WSW','W','WNW','NW','NNW']
+  },
+  en:{
+    headerTag:'Live Wind · 6 Models · 3 Days',
+    desc:'Live average from ICON, GFS, ECMWF, GEM, MétéoFrance & JMA for your spots. 3-day forecast — everything above 8 kts lights up.',
+    gm:'Good Morning',gd:'Hey',ge:'Good Evening',gsub:'ready to ride?',
+    refresh:'↻ Refresh',loading:'Loading...',error:'Error',
+    wc:'Calm',wl:'Light',wgo:'Here we go!',wwf:'Wingfoil!',wp:'Perfect!',ws:'Strong',wh:'Heavy',wst:'Storm!',
+    days:['Today','Tomorrow','Day after tomorrow'],nexth:'Next',
+    fc3:'3-Day Forecast · Peak · from',fcgo:'kts = GO',
+    mshow:'Models — show details',mhide:'Models — hide details',avg:'Ø AVG',gusts:'Gusts',
+    best:'Best spot right now:',bestwith:'with avg',now:'NOW',
+    ics:'Add to calendar',icssub:'→ Google Cal · iCal · Outlook',
+    intlTitle:'International Spots',
+    contactTag:'Request a spot',contactH2a:'Request',contactH2b:'your spot',
+    contactDesc:"Want wind data for another spot? Write to me — I'll check if I can add it to the dashboard.",
+    lblName:'Your name',lblEmail:'E-mail',lblSpot:'Requested spot / location',lblMsg:'Message (optional)',
+    phName:'John Doe',phSpot:'e.g. Lake Garda, Tarifa, Maui …',phMsg:'Entry points, preferred wind direction, or other info …',
+    btnSend:'✉️ Send request',formNote:'Directly to marc@marcstickler.at',
+    formOk:"✅ Thanks! Your request has been sent. I'll get back to you as soon as possible.",
+    beer:'Buy me a beer',
+    dirs:['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW']
+  },
+  es:{
+    headerTag:'Viento en Vivo · 6 Modelos · 3 Días',
+    desc:'Promedio en vivo de ICON, GFS, ECMWF, GEM, MétéoFrance y JMA para tus spots. Pronóstico de 3 días — todo a partir de 8 nudos se ilumina.',
+    gm:'Buenos días',gd:'Hola',ge:'Buenas tardes',gsub:'¿listo para surfear?',
+    refresh:'↻ Actualizar',loading:'Cargando...',error:'Error',
+    wc:'Calma',wl:'Ligero',wgo:'¡Vamos!',wwf:'¡Wingfoil!',wp:'¡Perfecto!',ws:'Fuerte',wh:'Muy fuerte',wst:'¡Tormenta!',
+    days:['Hoy','Mañana','Pasado mañana'],nexth:'Próximas',
+    fc3:'Pronóstico 3 días · Pico · desde',fcgo:'nd = GO',
+    mshow:'Modelos — ver detalles',mhide:'Modelos — ocultar detalles',avg:'Ø PROM',gusts:'Ráfagas',
+    best:'Mejor spot ahora:',bestwith:'con Ø',now:'AHORA',
+    ics:'Añadir al calendario',icssub:'→ Google Cal · iCal · Outlook',
+    intlTitle:'Spots Internacionales',
+    contactTag:'Solicitar un spot',contactH2a:'Solicitar',contactH2b:'tu spot',
+    contactDesc:'¿Quieres datos de viento para otro spot? Escríbeme — veré si puedo añadirlo al dashboard.',
+    lblName:'Tu nombre',lblEmail:'Correo electrónico',lblSpot:'Spot / lugar deseado',lblMsg:'Mensaje (opcional)',
+    phName:'Juan García',phSpot:'p.ej. Tarifa, El Médano, Fuerteventura …',phMsg:'Puntos de entrada, dirección de viento preferida, u otra info …',
+    btnSend:'✉️ Enviar solicitud',formNote:'Directamente a marc@marcstickler.at',
+    formOk:'✅ ¡Gracias! Tu solicitud ha sido enviada. Me pondré en contacto contigo lo antes posible.',
+    beer:'Invítame una cerveza',
+    dirs:['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO']
+  },
+  fr:{
+    headerTag:'Vent en Direct · 6 Modèles · 3 Jours',
+    desc:'Moyenne en direct de ICON, GFS, ECMWF, GEM, MétéoFrance & JMA pour tes spots. Prévision 3 jours — tout à partir de 8 nœuds s\'illumine.',
+    gm:'Bonjour',gd:'Salut',ge:'Bonsoir',gsub:'prêt à rider ?',
+    refresh:'↻ Actualiser',loading:'Chargement...',error:'Erreur',
+    wc:'Calme',wl:'Léger',wgo:'C\'est parti !',wwf:'Wingfoil !',wp:'Parfait !',ws:'Fort',wh:'Très fort',wst:'Tempête !',
+    days:['Aujourd\'hui','Demain','Après-demain'],nexth:'Prochaines',
+    fc3:'Prévision 3 jours · Pic · à partir de',fcgo:'nd = GO',
+    mshow:'Modèles — afficher les détails',mhide:'Modèles — masquer les détails',avg:'Ø MOY',gusts:'Rafales',
+    best:'Meilleur spot maintenant :',bestwith:'avec moy.',now:'MAINTENANT',
+    ics:'Ajouter au calendrier',icssub:'→ Google Cal · iCal · Outlook',
+    intlTitle:'Spots Internationaux',
+    contactTag:'Demander un spot',contactH2a:'Demander',contactH2b:'ton spot',
+    contactDesc:'Tu veux des données de vent pour un autre spot ? Écris-moi — je verrai si je peux l\'ajouter au dashboard.',
+    lblName:'Ton prénom',lblEmail:'E-mail',lblSpot:'Spot / lieu souhaité',lblMsg:'Message (optionnel)',
+    phName:'Jean Dupont',phSpot:'ex. Leucate, Gruissan, La Palme …',phMsg:'Points d\'entrée, direction de vent préférée, ou autres infos …',
+    btnSend:'✉️ Envoyer la demande',formNote:'Directement à marc@marcstickler.at',
+    formOk:'✅ Merci ! Ta demande a été envoyée. Je te répondrai dès que possible.',
+    beer:'Offre-moi une bière',
+    dirs:['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO']
+  },
+  pt:{
+    headerTag:'Vento ao Vivo · 6 Modelos · 3 Dias',
+    desc:'Média ao vivo de ICON, GFS, ECMWF, GEM, MétéoFrance & JMA para os teus spots. Previsão de 3 dias — tudo a partir de 8 nós fica iluminado.',
+    gm:'Bom dia',gd:'Olá',ge:'Boa tarde',gsub:'pronto para surfar?',
+    refresh:'↻ Atualizar',loading:'Carregando...',error:'Erro',
+    wc:'Calmaria',wl:'Fraco',wgo:'Vamos!',wwf:'Wingfoil!',wp:'Perfeito!',ws:'Forte',wh:'Muito forte',wst:'Tempestade!',
+    days:['Hoje','Amanhã','Depois de amanhã'],nexth:'Próximas',
+    fc3:'Previsão 3 dias · Pico · a partir de',fcgo:'nós = GO',
+    mshow:'Modelos — ver detalhes',mhide:'Modelos — ocultar detalhes',avg:'Ø MÉD',gusts:'Rajadas',
+    best:'Melhor spot agora:',bestwith:'com méd.',now:'AGORA',
+    ics:'Adicionar ao calendário',icssub:'→ Google Cal · iCal · Outlook',
+    intlTitle:'Spots Internacionais',
+    contactTag:'Solicitar um spot',contactH2a:'Solicitar',contactH2b:'o teu spot',
+    contactDesc:'Queres dados de vento para outro spot? Escreve-me — verei se posso adicioná-lo ao dashboard.',
+    lblName:'O teu nome',lblEmail:'E-mail',lblSpot:'Spot / local desejado',lblMsg:'Mensagem (opcional)',
+    phName:'João Silva',phSpot:'ex. Algarve, Peniche, Viana do Castelo …',phMsg:'Pontos de entrada, direção de vento preferida, ou outras informações …',
+    btnSend:'✉️ Enviar pedido',formNote:'Diretamente para marc@marcstickler.at',
+    formOk:'✅ Obrigado! O teu pedido foi enviado. Entro em contacto brevemente.',
+    beer:'Paga-me uma cerveja',
+    dirs:['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO']
+  },
+  it:{
+    headerTag:'Vento in Diretta · 6 Modelli · 3 Giorni',
+    desc:'Media in tempo reale di ICON, GFS, ECMWF, GEM, MétéoFrance & JMA per i tuoi spot. Previsione 3 giorni — tutto da 8 nodi si illumina.',
+    gm:'Buongiorno',gd:'Ciao',ge:'Buonasera',gsub:'pronto ad andare in acqua?',
+    refresh:'↻ Aggiorna',loading:'Caricamento...',error:'Errore',
+    wc:'Bonaccia',wl:'Leggero',wgo:'Si va!',wwf:'Wingfoil!',wp:'Perfetto!',ws:'Forte',wh:'Molto forte',wst:'Tempesta!',
+    days:['Oggi','Domani','Dopodomani'],nexth:'Prossime',
+    fc3:'Previsione 3 giorni · Picco · da',fcgo:'nd = GO',
+    mshow:'Modelli — mostra dettagli',mhide:'Modelli — nascondi dettagli',avg:'Ø MEDIA',gusts:'Raffiche',
+    best:'Miglior spot ora:',bestwith:'con media',now:'ORA',
+    ics:'Aggiungi al calendario',icssub:'→ Google Cal · iCal · Outlook',
+    intlTitle:'Spot Internazionali',
+    contactTag:'Richiedere uno spot',contactH2a:'Richiedi',contactH2b:'il tuo spot',
+    contactDesc:'Vuoi dati del vento per un altro spot? Scrivimi — verificherò se posso aggiungerlo alla dashboard.',
+    lblName:'Il tuo nome',lblEmail:'E-mail',lblSpot:'Spot / luogo desiderato',lblMsg:'Messaggio (opzionale)',
+    phName:'Mario Rossi',phSpot:'es. Lo Stagnone, Lago di Garda, Sardegna …',phMsg:'Punti di ingresso, direzione del vento preferita, o altre info …',
+    btnSend:'✉️ Invia richiesta',formNote:'Direttamente a marc@marcstickler.at',
+    formOk:'✅ Grazie! La tua richiesta è stata inviata. Ti risponderò al più presto.',
+    beer:'Offrimi una birra',
+    dirs:['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO']
+  }
+};
+
 const LAKES=[
-  {id:"wallersee",name:"Wallersee",subtitle:"Hauptspot",lat:47.916,lon:13.145,emoji:"⭐",distance:"8 km",
-    links:{windy:"https://www.windy.com/47.916/13.145?47.916,13.145,12",windyApp:"https://windy.app/forecast/f_47.916_13.145",windfinder:"https://www.windfinder.com/forecast/wallersee",windguru:"https://www.windguru.cz/48867"}},
-  {id:"mondsee",name:"Mondsee",subtitle:"Thermik-Paradies",lat:47.821,lon:13.382,emoji:"🔥",distance:"22 km",
-    links:{windy:"https://www.windy.com/47.821/13.382?47.821,13.382,12",windyApp:"https://windy.app/forecast/f_47.821_13.382",windfinder:"https://www.windfinder.com/forecast/mondsee_salzkammergut",windguru:"https://www.windguru.cz/173094"}},
-  {id:"wolfgangsee",name:"Wolfgangsee",subtitle:"Der Klassiker",lat:47.738,lon:13.408,emoji:"💎",distance:"30 km",
-    links:{windy:"https://www.windy.com/47.738/13.408?47.738,13.408,12",windyApp:"https://windy.app/forecast/f_47.738_13.408",windfinder:"https://www.windfinder.com/forecast/wolfgangsee_st_gilgen",windguru:"https://www.windguru.cz/48869"}},
-  {id:"fuschlsee",name:"Fuschlsee",subtitle:"Quick Session",lat:47.798,lon:13.296,emoji:"⚡",distance:"14 km",
-    links:{windy:"https://www.windy.com/47.798/13.296?47.798,13.296,12",windyApp:"https://windy.app/forecast/f_47.798_13.296",windfinder:"https://www.windfinder.com/forecast/fuschlsee",windguru:"https://www.windguru.cz/1354071"}},
-  {id:"podersdorf",name:"Podersdorf",subtitle:"Neusiedlersee",lat:47.854,lon:16.831,emoji:"🌬️",distance:"290 km",
-    links:{windy:"https://www.windy.com/47.854/16.831?47.854,16.831,12",windyApp:"https://windy.app/forecast/f_47.854_16.831",windfinder:"https://www.windfinder.com/forecast/podersdorf_am_see_neusiedler_see",windguru:"https://www.windguru.cz/46018"}},
-  {id:"traunsee",name:"Traunsee",subtitle:"Ebensee · Traunkirchen",lat:47.855,lon:13.794,emoji:"🏔️",distance:"55 km",entries:["Ebensee","Traunkirchen"],
-    links:{windy:"https://www.windy.com/47.855/13.794?47.855,13.794,12",windyApp:"https://windy.app/forecast/f_47.855_13.794",windfinder:"https://www.windfinder.com/forecast/ebensee_traunsee",windguru:"https://www.windguru.cz/1354069"}}
+  {id:"wallersee",name:"Wallersee",subtitle:"Hauptspot",lat:47.916,lon:13.145,zoom:13,emoji:"⭐",distance:"8 km",
+    entries:[
+      {name:"Seekirchen Kitebeach",lat:47.902,lon:13.135,park:"Strandbad-Parkplatz (€2/h · Parkuhr)",info:"Ostwind-Spot · nur außerhalb Badesaison · Kite-Verbot im Sommer"},
+      {name:"Zell am Wallersee",lat:47.928,lon:13.075,park:"Naturbadesee-Parkplatz (gebührenpflichtig)",info:"West-/NW-Wind · NW-Seite des Sees · Kite unter Bäumen starten"},
+      {name:"Henndorf / Neumarkt",lat:47.926,lon:13.169,park:"Parkplatz Maierhof Neumarkt (~12 Gratis-Plätze)",info:"SW-/West-Wind · ruhiger Einstieg"}
+    ],
+    wind:{dirs:"W · O · NW",optimal:"10–20 kts",season:"Apr–Okt",water:"Flach · leichter Chop",tip:"Seekirchen für Ostwind (außerhalb Badesaison), Zell für West-/NW-Wind. Westwind kann bis 7 Bft erreichen. Thermik ab 11 Uhr. Kite-Verbot Strandbad Seekirchen in der Badesaison."},
+    sports:{kite:true,wing:true,level:"intermediate"},
+    links:{windy:"https://www.windy.com/47.916/13.145?47.916,13.145,12",windyApp:"https://windy.app/forecast/f_47.916_13.145",windfinder:"https://www.windfinder.com/forecast/wallersee",windguru:"https://www.windguru.cz/48867"},
+    cam:{url:"https://www.windinfo.eu/webcam-wallersee/",label:"Windinfo Webcam"}},
+  {id:"mondsee",name:"Mondsee",subtitle:"Thermik-Paradies",lat:47.852,lon:13.368,zoom:12,emoji:"🔥",distance:"22 km",
+    entries:[
+      {name:"Südufer Sandbank",lat:47.830,lon:13.375,park:"Straßenparkplätze Südufer (begrenzt, kostenlos)",info:"Nebelwind-Spot · Expert only · wenig Platz"},
+      {name:"Badeplatz alte Frau",lat:47.836,lon:13.397,park:"€2/Auto + €1/Person (Eintritt)",info:"Nach dem Tunnel · sehr eng · nur Fortgeschrittene"}
+    ],
+    wind:{dirs:"NW · W",optimal:"12–25 kts",season:"Mai–Sep",water:"Chop · kurze Wellen",tip:"'Nebelwind': leichte Ostströmung + Feuerkogel-Südwind erzeugt Nebelbank bis 6 Bft. Sehr spezifische Bedingungen. Böen in Lee möglich. Nicht für Anfänger!"},
+    sports:{kite:true,wing:true,level:"expert"},
+    links:{windy:"https://www.windy.com/47.821/13.382?47.821,13.382,12",windyApp:"https://windy.app/forecast/f_47.821_13.382",windfinder:"https://www.windfinder.com/forecast/mondsee_salzkammergut",windguru:"https://www.windguru.cz/173094"},
+    cam:{url:"https://mondseeblick.panomax.com/",label:"PANOMAX 360°"}},
+  {id:"wolfgangsee",name:"Wolfgangsee",subtitle:"Der Klassiker",lat:47.738,lon:13.420,zoom:12,emoji:"💎",distance:"30 km",
+    entries:[
+      {name:"Gamsjaga Einstieg (4 km südl. St. Gilgen)",lat:47.748,lon:13.428,park:"Straßenparkplatz (wenige Plätze · schnell voll)",info:"⚠️ Fels-Einstieg · sehr beengt · Expert only"},
+      {name:"St. Gilgen (leichte Bedingungen)",lat:47.769,lon:13.363,park:"Ortsparkplätze St. Gilgen (€)",info:"Alternative bei ruhigem Wind · einfacherer Zugang"}
+    ],
+    wind:{dirs:"W · NW",optimal:"10–20 kts",season:"Mai–Sep",water:"Chop",tip:"NW-Thermik ('Brunnwind') kann blitzartig auf 8–9 Bft ansteigen! Nur für Experten. Föhn (S-Wind) meiden. Fels-Einstieg sehr beengt — kein Spot für Einsteiger."},
+    sports:{kite:true,wing:false,level:"expert"},
+    links:{windy:"https://www.windy.com/47.738/13.408?47.738,13.408,12",windyApp:"https://windy.app/forecast/f_47.738_13.408",windfinder:"https://www.windfinder.com/forecast/wolfgangsee_st_gilgen",windguru:"https://www.windguru.cz/48869"},
+    cam:{url:"https://wolfgangsee.salzkammergut.at/en/webcams.html",label:"Wolfgangsee Webcams"}},
+  {id:"fuschlsee",name:"Fuschlsee",subtitle:"Quick Session",lat:47.798,lon:13.296,zoom:13,emoji:"⚡",distance:"14 km",
+    entries:[
+      {name:"Fuschlseebad (öffentlich)",lat:47.799,lon:13.292,park:"Parkplatz Fuschlseebad (kostenlos / günstig)",info:"W-/O-Wind · kleiner See · Wingfoil empfohlen · wenig Platz"},
+      {name:"Badeplatz Wesenauer",lat:47.797,lon:13.288,park:"Wesenauer Badeplatz (€ Gebühr)",info:"Etwas mehr Platz · ruhigerer Einstieg"}
+    ],
+    wind:{dirs:"W · O",optimal:"8–15 kts",season:"Apr–Sep",water:"Flach · kaum Welle",tip:"O-W-orientierter See: West- und Ostwind funktionieren beide. Ideal für Wingfoil. Wenig Platz am Ufer — Anfänger Randzeiten nutzen."},
+    sports:{kite:true,wing:true,level:"intermediate"},
+    links:{windy:"https://www.windy.com/47.798/13.296?47.798,13.296,12",windyApp:"https://windy.app/forecast/f_47.798_13.296",windfinder:"https://www.windfinder.com/forecast/fuschlsee",windguru:"https://www.windguru.cz/1354071"},
+    cam:{url:"https://fuschlseeregion.panomax.com/fuschl",label:"PANOMAX 360°"}},
+  {id:"podersdorf",name:"Podersdorf",subtitle:"Neusiedlersee",lat:47.854,lon:16.831,zoom:11,emoji:"🌬️",distance:"290 km",
+    entries:[
+      {name:"Nord-Nord Strand (Hauptspot)",lat:47.864,lon:16.834,park:"GPS: 'Nord-Nord Strand' · Tagsüber gratis · Nacht €15",info:"Eintrittspflicht Strandbad · einmalig €15 Pflicht-Lycra beim ersten Besuch"},
+      {name:"Illmitz",lat:47.766,lon:16.803,park:"Dorfparkplatz Illmitz (kostenlos)",info:"Ruhiger Alternativspot · etwas südlicher"}
+    ],
+    wind:{dirs:"W · SW · NW",optimal:"12–30 kts",season:"Ganzjährig",water:"Flachsee · max. 1,8 m tief · Weed",tip:"Onshore-Wind aus W/SW/NW. Flachstes Kiterevier Europas — perfekt für Beginner. Pflicht-Lycra + Strandbad-Eintritt beachten. Weltcup-Spot."},
+    sports:{kite:true,wing:true,level:"beginner"},
+    links:{windy:"https://www.windy.com/47.854/16.831?47.854,16.831,12",windyApp:"https://windy.app/forecast/f_47.854_16.831",windfinder:"https://www.windfinder.com/forecast/podersdorf_am_see_neusiedler_see",windguru:"https://www.windguru.cz/46018"},
+    cam:{url:"https://www.podersdorfamsee.at/en/webcam-2/",label:"Podersdorf Live Cam"}},
+  {id:"traunsee",name:"Traunsee",subtitle:"Ebensee · Traunkirchen",lat:47.855,lon:13.794,zoom:12,emoji:"🏔️",distance:"55 km",
+    entries:[
+      {name:"Rindbach / Ebensee",lat:47.801,lon:13.771,park:"Parkplatz Rindbach (kostenpflichtig · Saison früh kommen!)",info:"Hauptspot · Thermik 11–15 Uhr · Kite: Höhe halten Pflicht"},
+      {name:"Traunkirchen Steg",lat:47.836,lon:13.787,park:"Traunkirchen Ortsparkplatz",info:"Alternativspot · bei gleichmäßigeren Bedingungen"}
+    ],
+    wind:{dirs:"N · NNW",optimal:"10–20 kts",season:"Apr–Okt",water:"Chop · kurze steile Wellen",tip:"Thermik-Nordwind aus dem Trauntal. Start ~11:00 Uhr, Ende ~15:00 Uhr. Typisch 10–15 kts. Bergfallböen möglich — Kite: Höhe halten ist Pflicht!"},
+    sports:{kite:true,wing:true,level:"intermediate"},
+    links:{windy:"https://www.windy.com/47.855/13.794?47.855,13.794,12",windyApp:"https://windy.app/forecast/f_47.855_13.794",windfinder:"https://www.windfinder.com/forecast/ebensee_traunsee",windguru:"https://www.windguru.cz/1354069"},
+    cam:{url:"https://www.windfinder.com/webcams/traunsee_ebensee",label:"Windfinder Cam"}}
+];
+
+const INTL=[
+  {id:"tarifa",name:"Tarifa",subtitle:"Strait of Gibraltar",lat:36.025,lon:-5.650,zoom:12,emoji:"🇪🇸",distance:"2.300 km",
+    entries:[
+      {name:"Valdevaqueros",lat:36.057,lon:-5.686,park:"Gratis-Parkplatz direkt am Strand",info:"Poniente & Levante · 3km Strand · Kite + Wing perfekt"},
+      {name:"Los Lances",lat:36.031,lon:-5.632,park:"Parking Los Lances (€2–3/Tag)",info:"Bester Poniente-Spot · nah an der Stadt · Anfänger-freundlich"},
+      {name:"Punta Paloma",lat:36.071,lon:-5.704,park:"Kleiner Parkplatz Punta Paloma",info:"Levante-Spot · wildere Bedingungen · für Fortgeschrittene"}
+    ],
+    wind:{dirs:"O (Levante) · W (Poniente)",optimal:"15–35 kts",season:"Ganzjährig",water:"Chop · Atlantik-Dünung",tip:"Levante = gusty & stark aus O, offshore am Südufer. Poniente = gleichmäßig 12–22 kts aus W. 300+ Windtage/Jahr. Rescue Service 'Sea Angels' empfohlen."},
+    sports:{kite:true,wing:true,level:"intermediate"},
+    links:{windy:"https://www.windy.com/36.014/-5.611?36.014,-5.611,12",windyApp:"https://windy.app/forecast/f_36.014_-5.611",windfinder:"https://www.windfinder.com/forecast/tarifa",windguru:"https://www.windguru.cz/304"},
+    cam:{url:"https://tarifa.graykite.surf/tarifa-webcams/",label:"Graykite Live Cams"}},
+  {id:"fuerteventura",name:"Fuerteventura",subtitle:"Sotavento · Canarias",lat:28.140,lon:-14.237,zoom:12,emoji:"🇪🇸",distance:"3.800 km",
+    entries:[
+      {name:"Sotavento Lagoon",lat:28.126,lon:-14.243,park:"René Egli Center Parkplatz (kostenlos für Gäste)",info:"Lagune bei Ebbe · glasglattes Flachwasser · Passat"},
+      {name:"Costa Calma",lat:28.157,lon:-14.232,park:"Ortsparkplätze Costa Calma",info:"Alternative bei stärkerem NE-Wind · mehr Offene See"}
+    ],
+    wind:{dirs:"NE · ENE",optimal:"15–28 kts",season:"Feb–Aug",water:"Lagune · glasglattes Flachwasser",tip:"Passat-Wind, extrem konstant und vorhersehbar. Lagune bei Ebbe perfekt für Freestyle, Racing & Wingfoil. PWA Weltcup-Spot."},
+    sports:{kite:true,wing:true,level:"beginner"},
+    links:{windy:"https://www.windy.com/28.152/-14.231?28.152,-14.231,12",windyApp:"https://windy.app/forecast/f_28.152_-14.231",windfinder:"https://www.windfinder.com/forecast/costa_calma_fuerteventura",windguru:"https://www.windguru.cz/166"},
+    cam:{url:"https://www.rene-egli.com/webcam",label:"René Egli Live Cam"}},
+  {id:"leucate",name:"Leucate",subtitle:"Étang de Leucate · France",lat:42.878,lon:3.030,zoom:11,emoji:"🇫🇷",distance:"1.150 km",
+    entries:[
+      {name:"La Franqui (Weltcup-Spot)",lat:42.900,lon:2.988,park:"Gratis-Parkplatz La Franqui (groß)",info:"Tramontane-Hauptspot · Mondialdu Vent · Kite & Wing"},
+      {name:"Port Leucate (Lagune)",lat:42.853,lon:3.059,park:"Hafen-Parkplatz Port Leucate (günstig)",info:"Flache Lagune · geschützter bei extremem Wind · Wingfoil ideal"}
+    ],
+    wind:{dirs:"NW · N (Tramontane)",optimal:"15–40 kts",season:"Ganzjährig",water:"Lagune · Chop · Meer",tip:"Tramontane 300+ Tage/Jahr, kommt oft schlagartig. Für Wingfoil kleinere Wing mitbringen. Lagune sehr flach und geschützt."},
+    sports:{kite:true,wing:true,level:"intermediate"},
+    links:{windy:"https://www.windy.com/42.912/3.066?42.912,3.066,12",windyApp:"https://windy.app/forecast/f_42.912_3.066",windfinder:"https://www.windfinder.com/forecast/leucate",windguru:"https://www.windguru.cz/2199"},
+    cam:{url:"https://en.tourisme-leucate.com/webcam/",label:"Leucate Live Cams"}},
+  {id:"stagnone",name:"Lo Stagnone",subtitle:"Marsala · Sicilia",lat:37.875,lon:12.447,zoom:13,emoji:"🇮🇹",distance:"1.400 km",
+    entries:[
+      {name:"Lagune Nord Einstieg",lat:37.902,lon:12.459,park:"Parkplatz Laguna Nord (€ in Saison)",info:"Bester Kite/Wing-Einstieg · max. 1m tiefe Lagune"},
+      {name:"Lido Beach Einstieg",lat:37.860,lon:12.439,park:"Lido Beach Parkplatz (€)",info:"Südlicher Einstieg · etwas mehr Chop · Schulen vor Ort"}
+    ],
+    wind:{dirs:"NW · N · Maestrale",optimal:"10–22 kts",season:"Apr–Okt",water:"Flachlagune · max. 1 m tief",tip:"UNESCO-Gebiet — Regeln beachten. Maestrale (NW) typisch. Perfekt für Wingfoil & Freestyle Kite. Sonnenuntergang legendär."},
+    sports:{kite:true,wing:true,level:"beginner"},
+    links:{windy:"https://www.windy.com/37.872/12.441?37.872,12.441,12",windyApp:"https://windy.app/forecast/f_37.872_12.441",windfinder:"https://www.windfinder.com/forecast/lo_stagnone",windguru:"https://www.windguru.cz/48840"},
+    cam:{url:"https://www.stagnonekiteboarding.com/en/webcam/",label:"Stagnone Live Cam"}},
+  {id:"dakhla",name:"Dakhla",subtitle:"Lagoon · Marokko",lat:23.714,lon:-15.935,zoom:11,emoji:"🇲🇦",distance:"4.200 km",
+    entries:[
+      {name:"Dakhla Lagoon Kitebase",lat:23.714,lon:-15.935,park:"Camp-Parkplatz (meist im Preis inkl.)",info:"Kitebase mit Bootservice · perfekte flache Lagune"},
+      {name:"Speed Crossing Zone",lat:23.680,lon:-15.920,park:"Via Camp erreichbar",info:"Racing & Speed-Zone · nur für Fortgeschrittene"}
+    ],
+    wind:{dirs:"N · NNE",optimal:"15–28 kts",season:"Ganzjährig",water:"Lagune · glasglattes Flachwasser",tip:"Konstantester Wind Afrikas. Perfekt für Speed-Rekorde & Freestyle Wingfoil. Wasser 30°C+. EU-Bürger: einfache Einreise."},
+    sports:{kite:true,wing:true,level:"intermediate"},
+    links:{windy:"https://www.windy.com/23.714/-15.935?23.714,-15.935,12",windyApp:"https://windy.app/forecast/f_23.714_-15.935",windfinder:"https://www.windfinder.com/forecast/dakhla",windguru:"https://www.windguru.cz/43091"},
+    cam:{url:"https://www.windfinder.com/webcams/dakhla_morocco",label:"Windfinder Cam"}},
+  {id:"elgouna",name:"El Gouna",subtitle:"Red Sea · Ägypten",lat:27.402,lon:33.680,zoom:12,emoji:"🇪🇬",distance:"3.600 km",
+    entries:[
+      {name:"Blue Lagoon (KBC)",lat:27.395,lon:33.675,park:"KBC El Gouna Parking (für Gäste kostenlos)",info:"Thermik ab 11 Uhr · flache Lagune · Wingfoil ideal"},
+      {name:"El Gouna Kite Beach (Makani)",lat:27.412,lon:33.685,park:"Makani Beach Club Parking",info:"Wingfoil-Hotspot · warmes Wasser · Korallen beachten"}
+    ],
+    wind:{dirs:"N · NW (thermisch)",optimal:"12–22 kts",season:"Ganzjährig",water:"Flachlagune · warmes Wasser",tip:"Thermik täglich ab ~11 Uhr, abends meist flau. Ideal für Wingfoil. Korallen im Wasser — Wasserschuhe empfohlen!"},
+    sports:{kite:true,wing:true,level:"intermediate"},
+    links:{windy:"https://www.windy.com/27.395/33.675?27.395,33.675,12",windyApp:"https://windy.app/forecast/f_27.395_33.675",windfinder:"https://www.windfinder.com/forecast/el_gouna",windguru:"https://www.windguru.cz/48838"},
+    cam:{url:"https://www.kiteboarding-club.com/en/webcam-elgouna",label:"KBC 360° Cam"}}
 ];
 
 const MODELS=[
@@ -274,29 +789,62 @@ const SVCS=[
   {key:"windguru",label:"Windguru",color:"#ffaa00",icon:"🧙"}
 ];
 
-const DL=["N","NNO","NO","ONO","O","OSO","SO","SSO","S","SSW","SW","WSW","W","WNW","NW","NNW"];
-const d2d=d=>d==null?"–":DL[Math.round(d/22.5)%16];
+const d2d=d=>{if(d==null)return"–";return T[lang].dirs[Math.round(d/22.5)%16];};
 const toK=k=>k!=null?(k/1.852).toFixed(1):null;
 const toKF=k=>k!=null?parseFloat((k/1.852).toFixed(1)):null;
 const wc=k=>{if(k==null)return"rgba(255,255,255,0.3)";if(k<6)return"#5a6a7a";if(k<GO)return"#78909c";if(k<10)return"#4ade80";if(k<15)return"#22d3ee";if(k<20)return"#6bcbff";if(k<25)return"#fbbf24";if(k<30)return"#fb923c";return"#ef4444"};
-const wl=k=>{if(k==null)return"–";if(k<6)return"Flaute";if(k<GO)return"Leicht";if(k<12)return"Geht los!";if(k<16)return"Wingfoil!";if(k<20)return"Perfekt!";if(k<25)return"Stark";if(k<30)return"Heftig";return"Sturm!"};
+const wl=k=>{const t=T[lang];if(k==null)return"–";if(k<6)return t.wc;if(k<GO)return t.wl;if(k<12)return t.wgo;if(k<16)return t.wwf;if(k<20)return t.wp;if(k<25)return t.ws;if(k<30)return t.wh;return t.wst;};
 const cM=dirs=>{if(!dirs.length)return null;const s=dirs.reduce((a,d)=>a+Math.sin(d*Math.PI/180),0),c=dirs.reduce((a,d)=>a+Math.cos(d*Math.PI/180),0);return(Math.atan2(s,c)*180/Math.PI+360)%360};
 const aS=(d,s,c)=>d==null?'':`<svg width="${s}" height="${s}" viewBox="0 0 24 24" class="wind-arrow" style="transform:rotate(${d+180}deg)"><path d="M12 2 L18 18 L12 14 L6 18 Z" fill="${c}" opacity=".9"/></svg>`;
 
 const store={},exp={};
 
+function setLang(l){
+  lang=l;
+  updatePageLang();
+  init();
+  renderAll();
+}
+
+function updatePageLang(){
+  const t=T[lang];
+  const s=id=>document.getElementById(id);
+  // Static text nodes
+  if(s('headerTag')) s('headerTag').textContent=t.headerTag;
+  if(s('headerDesc')) s('headerDesc').textContent=t.desc;
+  if(s('refreshBtn')) s('refreshBtn').textContent=t.refresh;
+  if(s('beerLabel')) s('beerLabel').textContent=t.beer;
+  if(s('intlTitle')) s('intlTitle').textContent=t.intlTitle;
+  if(s('contactTag')) s('contactTag').textContent=t.contactTag;
+  if(s('contactH2a')) s('contactH2a').textContent=t.contactH2a;
+  if(s('contactH2b')) s('contactH2b').textContent=t.contactH2b;
+  if(s('contactDesc')) s('contactDesc').textContent=t.contactDesc;
+  if(s('lblName')) s('lblName').textContent=t.lblName;
+  if(s('lblEmail')) s('lblEmail').textContent=t.lblEmail;
+  if(s('lblSpot')) s('lblSpot').textContent=t.lblSpot;
+  if(s('lblMsg')) s('lblMsg').textContent=t.lblMsg;
+  if(s('inpName')) s('inpName').placeholder=t.phName;
+  if(s('inpSpot')) s('inpSpot').placeholder=t.phSpot;
+  if(s('inpMsg')) s('inpMsg').placeholder=t.phMsg;
+  if(s('btnSend')) s('btnSend').textContent=t.btnSend;
+  if(s('formNote')) s('formNote').textContent=t.formNote;
+  if(s('formSuccess')) s('formSuccess').textContent=t.formOk;
+}
+
 function init(){
-  const h=new Date().getHours();
-  document.getElementById('greeting').innerHTML=`${h<12?"Guten Morgen":h<17?"Servus":"Guten Abend"},<br><span class="grad">ab aufs Wasser?</span>`;
+  const h=new Date().getHours(),t=T[lang];
+  document.getElementById('greeting').innerHTML=`${h<12?t.gm:h<17?t.gd:t.ge},<br><span class="grad">${t.gsub}</span>`;
   document.getElementById('modelLegend').innerHTML=MODELS.map(m=>`<div class="model-pill" style="border:1px solid ${m.color}22;background:${m.color}08"><div class="dot" style="background:${m.color}"></div><span style="color:${m.color}">${m.label}</span></div>`).join('');
+  // Language switcher
+  document.getElementById('langSwitcher').innerHTML=LANGS.map(l=>`<button class="lang-btn${lang===l.code?' active':''}" onclick="setLang('${l.code}')">${l.flag} ${l.label}</button>`).join('');
 }
 
 function updFooter(){const n=new Date();document.getElementById('footer').textContent=`ELSBETHEN · ${n.toLocaleDateString('de-AT',{weekday:'long',day:'numeric',month:'long'})} · ${n.toLocaleTimeString('de-AT',{hour:'2-digit',minute:'2-digit'})} · Open-Meteo API`}
 
 function updBanner(){
   let best=null,bk=-1;LAKES.forEach(l=>{const k=store[l.id]?.cur?.avgKts;if(k!=null&&k>bk){bk=k;best=l}});
-  const b=document.getElementById('bestBanner');
-  if(best&&bk>0){const c=wc(bk);b.style.display='flex';b.style.background=`linear-gradient(135deg,${c}15,${c}08)`;b.style.border=`1px solid ${c}25`;b.innerHTML=`<span style="font-size:20px">🏆</span><span>Bester Spot gerade: <strong style="color:${c}">${best.name} mit Ø ${bk.toFixed(0)} kts</strong></span>`}else b.style.display='none';
+  const b=document.getElementById('bestBanner'),t=T[lang];
+  if(best&&bk>0){const c=wc(bk);b.style.display='flex';b.style.background=`linear-gradient(135deg,${c}15,${c}08)`;b.style.border=`1px solid ${c}25`;b.innerHTML=`<span style="font-size:20px">🏆</span><span>${t.best} <strong style="color:${c}">${best.name} ${t.bestwith} ${bk.toFixed(0)} kts</strong></span>`}else b.style.display='none';
 }
 
 function updAlerts(){
@@ -304,7 +852,8 @@ function updAlerts(){
   LAKES.forEach(l=>{
     const wd=store[l.id];if(!wd)return;
     const k=wd.cur.avgKts;
-    if(k>=GO) chips.push(`<div class="alert-chip go"><div class="ac-dot"></div>${l.emoji} ${l.name} — ${k.toFixed(0)} kts JETZT</div>`);
+    const tn=T[lang];
+    if(k>=GO) chips.push(`<div class="alert-chip go"><div class="ac-dot"></div>${l.emoji} ${l.name} — ${k.toFixed(0)} kts ${tn.now}</div>`);
     else if(wd.days){
       const gd=wd.days.find(d=>d.peak>=GO);
       if(gd) chips.push(`<div class="alert-chip go" style="opacity:.7"><div class="ac-dot"></div>${l.emoji} ${l.name} — ${gd.peak.toFixed(0)} kts ${gd.label}</div>`);
@@ -353,7 +902,7 @@ function parse(data){
   }
 
   // 3-day grouped
-  const dm={},dn=['Heute','Morgen','Übermorgen'];
+  const dm={},dn=T[lang].days;
   for(let i=ci;i<times.length;i++){
     const t=new Date(times[i]),ds=t.toISOString().slice(0,10);
     if(!dm[ds])dm[ds]={date:ds,hrs:[]};
@@ -388,8 +937,9 @@ function renderCard(lake){
 
   // Wind display
   let wH='';
-  if(loading)wH=`<div class="wind-loading">Laden...</div>`;
-  else if(err)wH=`<div class="wind-error">Fehler</div>`;
+  const t=T[lang];
+  if(loading)wH=`<div class="wind-loading">${t.loading}</div>`;
+  else if(err)wH=`<div class="wind-error">${t.error}</div>`;
   else wH=`<div class="wind-num">${aS(ad,18,_c)}<span class="val" style="color:${_c}">${ak!=null?ak.toFixed(0):'–'}</span><span class="unit">kts</span></div><div class="wind-meta">${ag!=null?`<span class="gust">G${ag.toFixed(0)}</span>`:''}<span class="label" style="color:${_c}">${d2d(ad)} · ${_l}</span></div>`;
 
   // 8h bars
@@ -399,7 +949,7 @@ function renderCard(lake){
       const k=h.avgKts||0,bH=Math.max(4,Math.min((k/35)*50,50)),t=new Date(h.time),hh=t.getHours().toString().padStart(2,'0'),c=wc(k),g=k>=GO;
       return`<div class="hb-col"><span class="hb-val" style="color:${c};${g?'font-weight:800':''}">${k>0?k.toFixed(0):''}</span><div class="hb-bar" style="height:${bH}px;background:linear-gradient(180deg,${c},${c}44);${g?'box-shadow:0 0 8px '+c+'44':''}"></div><span class="hb-time">${hh}</span></div>`;
     }).join('');
-    h8=`<div class="hourly-wrap"><div class="section-label">Nächste ${wd.h8.length}h (kts)</div><div class="hourly-bars">${bars}</div></div>`;
+    h8=`<div class="hourly-wrap"><div class="section-label">${t.nexth} ${wd.h8.length}h (kts)</div><div class="hourly-bars">${bars}</div></div>`;
   }
 
   // 3-day forecast
@@ -415,49 +965,131 @@ function renderCard(lake){
       }).join('');
       return`<div class="forecast-day"><span class="fd-label" style="${ig?'color:var(--go-color);font-weight:700':''}">${day.label}</span><span class="fd-dir">${aS(day.dir,12,ig?'var(--go-color)':'rgba(255,255,255,.3)')}<span>${d2d(day.dir)}</span></span><div class="fd-bars">${bars}</div><span class="fd-peak ${ig?'fd-peak-go':''}" style="color:${pc}">${day.peak.toFixed(0)}<span style="font-size:9px;opacity:.5"> kts</span></span></div>`;
     }).join('');
-    fc=`<div class="forecast-section"><div class="section-label">3-Tage Forecast · Peak · ab ${GO} kts = GO</div>${rows}</div>`;
+    fc=`<div class="forecast-section"><div class="section-label">${t.fc3} ${GO} ${t.fcgo}</div>${rows}</div>`;
   }
 
   // Model toggle
   let mt='',md='';
   if(wd){
-    mt=`<div class="model-toggle"><button onclick="tog('${lake.id}')"><svg width="10" height="10" viewBox="0 0 10 10" style="transform:rotate(${ex?90:0}deg);transition:transform .2s"><path d="M3 1L7 5L3 9" stroke="rgba(255,255,255,.3)" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>${wd.cur.mc||0} Modelle — Details ${ex?'ausblenden':'anzeigen'}</button></div>`;
+    mt=`<div class="model-toggle"><button onclick="tog('${lake.id}')"><svg width="10" height="10" viewBox="0 0 10 10" style="transform:rotate(${ex?90:0}deg);transition:transform .2s"><path d="M3 1L7 5L3 9" stroke="rgba(255,255,255,.3)" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>${wd.cur.mc||0} ${ex?t.mhide:t.mshow}</button></div>`;
     if(ex){
       const rows=MODELS.map(m=>{const d=wd.models[m.key],k=d?.kts,g=d?.gKts,w=k?Math.min((parseFloat(k)/35)*100,100):0;return`<div class="model-bar-row"><span class="mb-label">${m.label}</span><div class="mb-track"><div class="mb-fill" style="width:${w}%;background:linear-gradient(90deg,${m.color}88,${m.color})"></div></div><span class="mb-kts" style="color:${k?'#fff':'rgba(255,255,255,.2)'}">${k??'–'}</span><span class="mb-gust">${g?'G'+g:''}</span></div>`}).join('');
-      md=`<div class="model-details"><div class="model-bar-row" style="margin-bottom:4px"><span class="mb-label"></span><div style="flex:1"></div><span class="mb-kts" style="font-size:9px;color:rgba(255,255,255,.2)">kts</span><span class="mb-gust" style="font-size:9px;color:rgba(255,255,255,.2)">Böen</span></div>${rows}<div class="model-bar-row avg-row"><span class="mb-label" style="color:${_c}">Ø SCHNITT</span><div style="flex:1"></div><span class="mb-kts" style="color:${_c}">${ak?.toFixed(1)??'–'}</span><span class="mb-gust" style="color:rgba(255,255,255,.35)">${ag?'G'+ag.toFixed(1):''}</span></div></div>`;
+      md=`<div class="model-details"><div class="model-bar-row" style="margin-bottom:4px"><span class="mb-label"></span><div style="flex:1"></div><span class="mb-kts" style="font-size:9px;color:rgba(255,255,255,.2)">kts</span><span class="mb-gust" style="font-size:9px;color:rgba(255,255,255,.2)">${t.gusts}</span></div>${rows}<div class="model-bar-row avg-row"><span class="mb-label" style="color:${_c}">${t.avg}</span><div style="flex:1"></div><span class="mb-kts" style="color:${_c}">${ak?.toFixed(1)??'–'}</span><span class="mb-gust" style="color:rgba(255,255,255,.35)">${ag?'G'+ag.toFixed(1):''}</span></div></div>`;
     }
   }
 
   const svcs=SVCS.map(s=>`<a class="svc-link" href="${lake.links[s.key]}" target="_blank" rel="noopener" style="--svc-color:${s.color}"><span class="svc-icon">${s.icon}</span><span class="svc-name">${s.label}</span><svg class="svc-arrow" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`).join('');
-  const entryHtml=lake.entries?`<div style="padding:6px 24px 0;display:flex;gap:6px;flex-wrap:wrap">${lake.entries.map(e=>`<span style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.4);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:3px 9px">⚓ ${e}</span>`).join('')}</div>`:'';
+  const camBtn=lake.cam?`<a class="cam-btn" href="${lake.cam.url}" target="_blank" rel="noopener"><span class="cam-dot"></span>📷 LIVE · ${lake.cam.label}</a>`:'';
+
+  // Sport badges
+  const sp=lake.sports;
+  const lvlLabel={'beginner':'🟢 Anfänger','intermediate':'🟡 Mittelstufe','expert':'🔴 Expert only'};
+  const sportBadges=sp?`<div class="sport-row">${sp.kite?`<span class="sport-badge kite">🪁 Kitesurf</span>`:''}${sp.wing?`<span class="sport-badge wing">🤙 Wingfoil</span>`:''}${sp.level?`<span class="level-badge ${sp.level}">${lvlLabel[sp.level]||sp.level}</span>`:''}</div>`:''
+
+  // Entry points with parking info
+  const entryHtml=lake.entries&&lake.entries.length?`<div class="entry-chips">${lake.entries.map(e=>`<div class="entry-item"><span class="entry-chip" onclick="flyTo('${lake.id}',${e.lat},${e.lon})">⚓ ${e.name}</span>${e.park||e.info?`<div class="entry-detail"><span class="ep">🅿️ ${e.park||'–'}</span>${e.info?` · ${e.info}`:''}</div>`:''}</div>`).join('')}</div>`:''
+
+  // Wind info
+  const windHtml=lake.wind?`<div class="wind-info"><span class="wi-chip dir">🧭 ${lake.wind.dirs}</span><span class="wi-chip spd">⚡ ${lake.wind.optimal}</span><span class="wi-chip sea">📅 ${lake.wind.season}</span><span class="wi-chip wat">🌊 ${lake.wind.water}</span></div><div class="wind-tip">💡 ${lake.wind.tip}</div>`:'';
+
+  // Map placeholder — initialized after render
+  const mapHtml=`<div class="spot-map-wrap"><div id="map-${lake.id}" class="spot-map"></div></div>`;
 
   const badge=isGo?`<span class="go-badge"><span class="go-dot"></span>GO!</span>`:fGoC>0?`<span class="go-badge" style="opacity:.55;animation:none"><span class="go-dot" style="background:#4ade80;box-shadow:0 0 6px #4ade80"></span>${fGoC}d GO</span>`:'';
 
-  const icsBtn=isGo?`<button class="ics-btn" onclick="makeICS(LAKES.find(l=>l.id==='${lake.id}'))"><span class="ics-icon">📅</span><span class="ics-label">Session eintragen</span><span class="ics-sub">→ Google Cal · iCal · Outlook</span></button>`:'';
+  const icsBtn=isGo?`<button class="ics-btn" onclick="makeICS([...LAKES,...INTL].find(l=>l.id==='${lake.id}'))"><span class="ics-icon">📅</span><span class="ics-label">${t.ics}</span><span class="ics-sub">${t.icssub}</span></button>`:'';
 
   return`<div class="lake-card ${isGo?'is-go':''}" style="border:1px solid ${isGo?'var(--go-color)33':'rgba(255,255,255,0.08)'}">
     <div class="card-header"><div><div class="lake-name"><span style="font-size:22px">${lake.emoji}</span><h2>${lake.name}</h2>${badge}</div><span class="lake-sub">${lake.subtitle} · ${lake.distance}</span></div><div class="wind-big">${wH}</div></div>
-    ${entryHtml}${h8}${fc}${mt}${md}<div class="card-sep"></div>${icsBtn}<div class="services">${svcs}</div></div>`;
+    ${mapHtml}${sportBadges}${entryHtml}${camBtn}${windHtml}${h8}${fc}${mt}${md}<div class="card-sep"></div>${icsBtn}<div class="services">${svcs}</div></div>`;
+}
+
+let intlOpen=false,intlFetched=false;
+const mapInst={};
+
+function initMaps(lakes){
+  if(typeof L==='undefined') return;
+  lakes.forEach(lake=>{
+    const el=document.getElementById('map-'+lake.id);
+    if(!el) return;
+    // Remove old instance if container was re-created
+    if(mapInst[lake.id]){try{mapInst[lake.id].remove()}catch(e){}delete mapInst[lake.id];}
+    try{
+      const map=L.map(el,{zoomControl:true,attributionControl:false,scrollWheelZoom:false}).setView([lake.lat,lake.lon],lake.zoom||12);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd'}).addTo(map);
+      // Main spot marker (cyan)
+      const ic=L.divIcon({className:'',html:`<div style="width:14px;height:14px;background:#22d3ee;border-radius:50%;border:2px solid #fff;box-shadow:0 0 10px #22d3ee88"></div>`,iconSize:[14,14],iconAnchor:[7,7]});
+      L.marker([lake.lat,lake.lon],{icon:ic}).addTo(map).bindPopup(`<b>${lake.name}</b><br>${lake.subtitle}`);
+      // Entry point markers (gold)
+      if(lake.entries){
+        lake.entries.forEach(e=>{
+          const ei=L.divIcon({className:'',html:`<div style="width:10px;height:10px;background:#fbbf24;border-radius:50%;border:2px solid #fff;box-shadow:0 0 6px #fbbf2488"></div>`,iconSize:[10,10],iconAnchor:[5,5]});
+          L.marker([e.lat,e.lon],{icon:ei}).addTo(map).bindPopup(`<b>⚓ ${e.name}</b>`);
+        });
+      }
+      mapInst[lake.id]=map;
+    }catch(e){console.warn('Map init error:',lake.id,e);}
+  });
+}
+
+function flyTo(id,lat,lon){
+  const m=mapInst[id];
+  if(m) m.setView([lat,lon],14,{animate:true});
+}
+
+function sortByWind(list){
+  return [...list].sort((a,b)=>{
+    const ka=store[a.id]?.cur?.avgKts??-1;
+    const kb=store[b.id]?.cur?.avgKts??-1;
+    return kb-ka;
+  });
 }
 
 function renderAll(){
-  document.getElementById('lakeGrid').innerHTML=LAKES.map(l=>renderCard(l)).join('');
+  document.getElementById('lakeGrid').innerHTML=sortByWind(LAKES).map(l=>renderCard(l)).join('');
+  if(intlOpen) document.getElementById('intlGrid').innerHTML=sortByWind(INTL).map(l=>renderCard(l)).join('');
   updBanner();updAlerts();updFooter();
+  setTimeout(()=>initMaps(LAKES),50);
+  if(intlOpen) setTimeout(()=>initMaps(INTL),100);
 }
+
+function toggleIntl(){
+  intlOpen=!intlOpen;
+  const grid=document.getElementById('intlGrid');
+  const chev=document.getElementById('intlChevron');
+  grid.style.display=intlOpen?'grid':'none';
+  chev.classList.toggle('open',intlOpen);
+  if(intlOpen){
+    grid.innerHTML=INTL.map(l=>renderCard(l)).join('');
+    setTimeout(()=>initMaps(INTL),50);
+    if(!intlFetched){intlFetched=true;fetchIntl();}
+  }
+}
+
 function tog(id){exp[id]=!exp[id];renderAll()}
 
-async function fetchAllLakes(){
-  renderAll();
+async function fetchLakeList(list,rerender){
   const mk=MODELS.map(m=>m.key).join(',');
-  for(const lake of LAKES){
+  for(const lake of list){
     delete store[lake.id+'_err'];
     try{
-      const res=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lake.lat}&longitude=${lake.lon}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&models=${mk}&timezone=Europe/Vienna&forecast_days=3`);
+      const res=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lake.lat}&longitude=${lake.lon}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&models=${mk}&timezone=auto&forecast_days=3`);
       if(!res.ok)throw new Error('API '+res.status);
       store[lake.id]=parse(await res.json());
     }catch(e){store[lake.id+'_err']=e.message}
-    renderAll();
+    rerender();
   }
+}
+
+async function fetchAllLakes(){
+  renderAll();
+  await fetchLakeList(LAKES,renderAll);
+}
+
+async function fetchIntl(){
+  await fetchLakeList(INTL,()=>{
+    if(intlOpen) document.getElementById('intlGrid').innerHTML=INTL.map(l=>renderCard(l)).join('');
+  });
 }
 
 function makeICS(lake){
@@ -479,11 +1111,21 @@ function makeICS(lake){
 
   const dir=d2d(ad);
   const summary=`🌊 ${lake.name} GO! — ${ak?.toFixed(0)??'?'} kts`;
-  const desc=`Wind: ${ak?.toFixed(1)??'?'} kts | Böen: ${ag?.toFixed(1)??'?'} kts | Richtung: ${dir}\\nSpot: ${lake.subtitle} (${lake.distance})\\n\\nWind Dashboard — marc@marcstickler.at`;
+  const desc=[
+    `💨 Wind: ${ak?.toFixed(1)??'?'} kts`,
+    `💥 Böen: ${ag?.toFixed(1)??'?'} kts`,
+    `🧭 Richtung: ${dir}`,
+    `📍 Spot: ${lake.subtitle} (${lake.distance})`,
+    ``,
+    `📅 Erstellt von Marc Stickler`,
+    `🌐 Wind Dashboard — marcstickler.github.io/windfinder`,
+    ``,
+    `🍺 Danke fürs Bier! paypal.me/marcstickler`
+  ].join('\\n');
 
   const ics=[
     'BEGIN:VCALENDAR','VERSION:2.0',
-    'PRODID:-//Wind Dashboard Elsbethen//DE',
+    'PRODID:-//Wind Dashboard · Marc Stickler//DE',
     'CALSCALE:GREGORIAN','METHOD:PUBLISH',
     'BEGIN:VEVENT',
     `DTSTAMP:${stamp}`,
@@ -492,6 +1134,7 @@ function makeICS(lake){
     `SUMMARY:${summary}`,
     `DESCRIPTION:${desc}`,
     `LOCATION:${lake.name}\\, Österreich`,
+    `ORGANIZER;CN=Marc Stickler:mailto:marc@marcstickler.at`,
     `UID:winddash-${lake.id}-${stamp}@marcstickler.at`,
     'STATUS:CONFIRMED',
     'END:VEVENT','END:VCALENDAR'
@@ -512,7 +1155,12 @@ function handleSubmit(e){
   setTimeout(()=>{form.style.display='none';success.style.display='block'},800);
 }
 
-init();renderAll();fetchAllLakes();setInterval(updFooter,60000);
+function openLegal(id){document.getElementById('modal-'+id).classList.add('open');document.body.style.overflow='hidden';}
+function closeLegal(id){document.getElementById('modal-'+id).classList.remove('open');document.body.style.overflow='';}
+function closeLegalOnOverlay(e){if(e.target===e.currentTarget){const id=e.currentTarget.id.replace('modal-','');closeLegal(id);}}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')['impressum','terms','privacy'].forEach(closeLegal);});
+
+updatePageLang();init();renderAll();fetchAllLakes();setInterval(updFooter,60000);
 </script>
 </body>
 </html>
