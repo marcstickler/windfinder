@@ -2,8 +2,15 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>🪁 Wind Dashboard — Elsbethen</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Wind Dashboard">
+<meta name="theme-color" content="#060d1f">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪁</text></svg>">
+<link rel="manifest" id="pwaManifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -292,9 +299,163 @@
   .lang-btn{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:5px 11px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:rgba(255,255,255,.35);transition:all .2s;display:flex;align-items:center;gap:5px}
   .lang-btn:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.65)}
   .lang-btn.active{background:rgba(0,200,255,.1);border-color:rgba(0,200,255,.3);color:rgba(0,200,255,.9)}
+
+  /* ── 16-Day Forecast Strip ── */
+  .fc10-wrap{padding:6px 20px 4px}
+  .fc10-days{display:flex;gap:4px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.08) transparent}
+  .fc10-days::-webkit-scrollbar{height:3px}.fc10-days::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+  .fc10-day{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:40px;max-width:44px;padding:6px 3px 5px;border-radius:8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);flex-shrink:0;cursor:default;transition:background .15s}
+  .fc10-day.fc10-go{background:rgba(34,211,238,.05);border-color:rgba(34,211,238,.18)}
+  .fc10-label{font-size:9px;color:rgba(255,255,255,.3);font-family:'DM Mono',monospace;white-space:nowrap;text-align:center}
+  .fc10-bar-wrap{height:28px;display:flex;align-items:flex-end;width:100%;justify-content:center}
+  .fc10-bar{width:14px;border-radius:2px 2px 0 0;opacity:.85;transition:height .3s}
+  .fc10-val{font-size:10px;font-weight:700;font-family:'DM Mono',monospace;text-align:center}
+  .fc10-day.fc10-go .fc10-label{color:rgba(34,211,238,.45)}
+  .fc10-day.fc10-go .fc10-val{filter:brightness(1.2)}
+  .fc10-myrange{background:rgba(251,191,36,.08)!important;border-color:rgba(251,191,36,.25)!important}
+
+  /* ── Settings FAB ── */
+  .settings-fab{position:fixed;bottom:88px;right:20px;z-index:99;width:48px;height:48px;border-radius:50%;background:rgba(15,30,55,.9);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s;backdrop-filter:blur(14px);box-shadow:0 4px 18px rgba(0,0,0,.5)}
+  .settings-fab:hover{border-color:rgba(0,200,255,.4);color:#00c8ff;transform:rotate(55deg)}
+  .settings-fab.has-config::after{content:'';position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:#4ade80;border:2px solid #060d1f}
+
+  /* ── Settings Overlay ── */
+  .settings-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.65);backdrop-filter:blur(10px);display:none;align-items:flex-end;justify-content:center}
+  .settings-panel{width:100%;max-width:640px;max-height:92vh;overflow-y:auto;background:linear-gradient(180deg,#0e2040 0%,#071020 100%);border-radius:24px 24px 0 0;border:1px solid rgba(255,255,255,.1);border-bottom:none;padding:28px 22px 48px;position:relative;scrollbar-width:thin}
+  .settings-drag{width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,.12);margin:0 auto 24px}
+  .settings-close{position:absolute;top:22px;right:18px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.45);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+  .settings-close:hover{background:rgba(255,255,255,.16);color:#fff}
+  .settings-title{font-family:'Anybody',sans-serif;font-weight:800;font-size:19px;letter-spacing:-.4px;margin-bottom:22px;display:flex;align-items:center;gap:10px}
+  .stitle-badge{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:rgba(0,200,255,.1);color:rgba(0,200,255,.7);font-family:'DM Mono',monospace}
+  .settings-sec{margin-bottom:22px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .settings-sec:last-child{border-bottom:none;margin-bottom:0}
+  .settings-sec-label{font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.28);margin-bottom:12px}
+  .s-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .s-label{font-size:13px;color:rgba(255,255,255,.5);flex-shrink:0}
+  .s-input{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;color:#fff;font-family:'DM Mono',monospace;font-size:13px;width:100%;outline:none;transition:border-color .2s}
+  .s-input:focus{border-color:rgba(0,200,255,.45);background:rgba(0,200,255,.04)}
+  .s-input-sm{width:72px!important}
+  .s-chips{display:flex;gap:6px;flex-wrap:wrap}
+  .s-chip{padding:5px 12px;border-radius:20px;font-size:11.5px;font-weight:600;cursor:pointer;transition:all .15s;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.04);color:rgba(255,255,255,.38);user-select:none}
+  .s-chip:hover{border-color:rgba(255,255,255,.18);color:rgba(255,255,255,.65)}
+  .s-chip.on{background:rgba(0,200,255,.11);border-color:rgba(0,200,255,.38);color:#33d6ff}
+  .s-chip.on-go{background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.35);color:#4ade80}
+  .s-range-display{font-family:'DM Mono',monospace;font-size:13px;color:#ffbb33;background:rgba(255,170,0,.08);border:1px solid rgba(255,170,0,.2);border-radius:8px;padding:6px 12px}
+  .ntfy-row{display:flex;gap:8px;align-items:center}
+  .ntfy-test{padding:8px 14px;border-radius:10px;background:rgba(74,222,128,.09);border:1px solid rgba(74,222,128,.3);color:#4ade80;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;font-family:'DM Mono',monospace}
+  .ntfy-test:hover{background:rgba(74,222,128,.18);border-color:rgba(74,222,128,.6)}
+  .ntfy-test:active{transform:scale(.95)}
+  .ntfy-hint{font-size:11px;color:rgba(255,255,255,.28);line-height:1.6;margin-top:8px}
+  .ntfy-hint a{color:rgba(0,200,255,.55);text-decoration:none}
+  .ntfy-hint a:hover{color:#00c8ff}
+  .s-notif-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+  .s-notif-item:last-child{border-bottom:none}
+  .s-notif-info strong{display:block;font-size:13px;font-weight:600;color:rgba(255,255,255,.7);margin-bottom:2px}
+  .s-notif-info span{font-size:11px;color:rgba(255,255,255,.3)}
+  .s-toggle{width:42px;height:24px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);position:relative;cursor:pointer;transition:all .25s;flex-shrink:0}
+  .s-toggle.on{background:rgba(0,200,255,.18);border-color:rgba(0,200,255,.5)}
+  .s-toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.35);transition:all .22s}
+  .s-toggle.on::after{left:21px;background:#00c8ff}
+  .s-save{width:100%;padding:13px;border-radius:12px;background:linear-gradient(135deg,rgba(0,200,255,.18),rgba(0,150,255,.12));border:1px solid rgba(0,200,255,.35);color:#00c8ff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .22s}
+  .s-save:hover{background:linear-gradient(135deg,rgba(0,200,255,.28),rgba(0,150,255,.2));box-shadow:0 4px 18px rgba(0,200,255,.15)}
+  .notif-status{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;padding:3px 9px;border-radius:10px;font-family:'DM Mono',monospace;margin-left:8px}
+  .notif-status.on{background:rgba(74,222,128,.1);color:#4ade80}
+  .notif-status.off{background:rgba(255,255,255,.06);color:rgba(255,255,255,.3)}
+  .notif-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 1.4s ease infinite}
+  .s-range-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .s-slider{width:100%;-webkit-appearance:none;height:4px;border-radius:2px;background:rgba(255,255,255,.1);outline:none}
+  .s-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#ffaa00;cursor:pointer;border:2px solid rgba(0,0,0,.3)}
+  .browser-notif-btn{padding:9px 16px;border-radius:10px;background:rgba(251,191,36,.09);border:1px solid rgba(251,191,36,.3);color:#fbbf24;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'DM Mono',monospace}
+  .browser-notif-btn:hover{background:rgba(251,191,36,.18);border-color:rgba(251,191,36,.6)}
+  .s-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+  .s-spot-chip{padding:6px 13px;border-radius:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;user-select:none}
+  .s-spot-chip.active{background:rgba(0,200,255,.12);border-color:rgba(0,200,255,.45);color:#00c8ff}
+  .s-spot-chip:hover{border-color:rgba(0,200,255,.25);color:rgba(255,255,255,.65)}
+  .notif-day-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer}
+  .notif-day-row:last-child{border-bottom:none}
+  .notif-day-row input[type=checkbox]{width:16px;height:16px;accent-color:#00c8ff;cursor:pointer;flex-shrink:0}
+  .notif-day-row span:nth-child(2){font-size:13px;font-weight:600;color:rgba(255,255,255,.7)}
+  .notif-day-desc{font-size:11px;color:rgba(255,255,255,.3);margin-left:auto}
+  .settings-overlay.open{display:flex}
 </style>
 </head>
 <body>
+
+<!-- Settings FAB -->
+<button class="settings-fab" id="settingsFab" onclick="openSettings()" title="Einstellungen & Benachrichtigungen">⚙️</button>
+
+<!-- Settings Modal -->
+<div class="settings-overlay" id="settingsOverlay" onclick="overlayClose(event)">
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-drag"></div>
+    <button class="settings-close" onclick="closeSettings()">✕</button>
+    <div class="settings-title">⚙️ Meine Einstellungen <span class="stitle-badge">BETA</span></div>
+
+    <!-- Wind-Fenster -->
+    <div class="settings-sec">
+      <div class="settings-sec-label">🌬️ Mein Wind-Fenster</div>
+      <div class="s-row">
+        <span class="s-label">Min:</span>
+        <input class="s-input s-input-sm" id="sMinKts" type="number" min="1" max="50" placeholder="8"> <span class="s-label">kts</span>
+        <span class="s-label" style="margin-left:8px">Max:</span>
+        <input class="s-input s-input-sm" id="sMaxKts" type="number" min="5" max="99" placeholder="30"> <span class="s-label">kts</span>
+        <span class="s-range-display" id="sRangeDisplay">8 – 30 kts</span>
+      </div>
+      <p style="font-size:11px;color:rgba(255,255,255,.28);line-height:1.5">Tage in deinem Fenster werden im 16-Tage-Outlook goldgelb hervorgehoben und lösen Notifications aus.</p>
+    </div>
+
+    <!-- Spots -->
+    <div class="settings-sec">
+      <div class="settings-sec-label">📍 Spots überwachen</div>
+      <div class="s-chips" id="sSpotChips"></div>
+    </div>
+
+    <!-- Benachrichtigungen -->
+    <div class="settings-sec">
+      <div class="settings-sec-label">🔔 Push-Benachrichtigungen via ntfy.sh</div>
+      <div class="ntfy-row">
+        <input class="s-input" id="sNtfyTopic" type="text" placeholder="dein-topic-name (z.B. windforecast-marc)">
+        <button class="ntfy-test" onclick="testNtfy()">Test 🔔</button>
+      </div>
+      <div class="ntfy-hint">
+        <strong style="color:rgba(255,255,255,.45)">So geht's:</strong><br>
+        1. <a href="https://ntfy.sh" target="_blank">ntfy.sh</a> App auf iPhone installieren (kostenlos)<br>
+        2. Topic oben eintragen &amp; auf „Test" klicken — du erhältst sofort eine Push-Benachrichtigung<br>
+        3. Ab jetzt bekommst du Alerts wenn Wind kommt — auch wenn das Dashboard nicht offen ist!<br>
+        <a href="https://ntfy.sh/app" target="_blank" style="color:rgba(74,222,128,.6)">→ App herunterladen (iOS &amp; Android)</a>
+      </div>
+    </div>
+
+    <!-- Wann benachrichtigen -->
+    <div class="settings-sec">
+      <div class="settings-sec-label">⏰ Wann soll ich dich warnen?</div>
+      <div id="sNotifDays"></div>
+    </div>
+
+    <!-- Browser Notifications -->
+    <div class="settings-sec">
+      <div class="settings-sec-label">🖥️ Browser-Benachrichtigungen (Mac / Desktop)</div>
+      <div class="s-row">
+        <button class="browser-notif-btn" onclick="requestBrowserNotif()" id="browserNotifBtn">Browser-Notifications aktivieren</button>
+        <span class="notif-status off" id="browserNotifStatus"><span class="notif-dot"></span> inaktiv</span>
+      </div>
+      <p style="font-size:11px;color:rgba(255,255,255,.28);margin-top:6px">Benachrichtigung direkt im Browser wenn die Seite geladen wird und Wind bevorsteht.</p>
+    </div>
+
+    <!-- iPhone PWA -->
+    <div class="settings-sec">
+      <div class="settings-sec-label">📱 iPhone App (PWA)</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.8;background:rgba(255,255,255,.03);border-radius:10px;padding:12px 14px;border:1px solid rgba(255,255,255,.07)">
+        1. Safari → Seite öffnen (marcstickler.github.io/windfinder)<br>
+        2. Teilen-Button <span style="color:#fff">⬆️</span> antippen<br>
+        3. „Zum Home-Bildschirm" wählen<br>
+        4. Das Dashboard erscheint als App-Icon 🪁 auf deinem iPhone!
+      </div>
+    </div>
+
+    <button class="s-save" onclick="saveSettingsAndClose()">💾 Einstellungen speichern</button>
+  </div>
+</div>
 
 <div class="orb orb-1"></div>
 <div class="orb orb-2"></div>
@@ -308,10 +469,10 @@
   <div class="header">
     <div class="header-tag">
       <span style="font-size:28px">🪁</span>
-      <span id="headerTag">Live Wind · 6 Modelle · 3 Tage</span>
+      <span id="headerTag">Live Wind · 6 Modelle · 16 Tage</span>
     </div>
     <h1 id="greeting"></h1>
-    <p id="headerDesc">Live-Durchschnitt aus ICON, GFS, ECMWF, GEM, MétéoFrance &amp; JMA für deine Spots. 3-Tage-Forecast — alles ab 8 kts leuchtet auf.</p>
+    <p id="headerDesc">Live-Durchschnitt aus ICON, GFS, ECMWF, GEM, MétéoFrance &amp; JMA für deine Spots. 16-Tage-Forecast — alles ab deinem Wind-Limit leuchtet auf.</p>
   </div>
 
   <div class="lang-switcher" id="langSwitcher"></div>
@@ -917,12 +1078,13 @@ function parse(data){
     dm[ds].hrs.push(he);
   }
 
-  Object.values(dm).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3).forEach((day,di)=>{
+  Object.values(dm).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,16).forEach((day,di)=>{
     const dh=day.hrs.filter(h=>h.hour>=6&&h.hour<=21);
     const uh=dh.length?dh:day.hrs;
     const pk=uh.reduce((b,h)=>h.avgKts>b.avgKts?h:b,uh[0]);
     const dirs=uh.filter(h=>h.avgDir!=null).map(h=>h.avgDir);
-    r.days.push({date:day.date,label:dn[di]||new Date(day.date+'T12:00').toLocaleDateString('de-AT',{weekday:'short',day:'numeric'}),hrs:uh,peak:pk.avgKts,peakG:pk.avgGKts,dir:cM(dirs)});
+    const lbl=dn[di]||new Date(day.date+'T12:00').toLocaleDateString('de-AT',{weekday:'short',day:'numeric',month:'numeric'});
+    r.days.push({date:day.date,label:lbl,hrs:uh,peak:pk.avgKts,peakG:pk.avgGKts,dir:cM(dirs)});
   });
 
   return r;
@@ -968,6 +1130,20 @@ function renderCard(lake){
     fc=`<div class="forecast-section"><div class="section-label">${t.fc3} ${GO} ${t.fcgo}</div>${rows}</div>`;
   }
 
+  // 16-day compact strip
+  let fc10='';
+  if(wd&&wd.days.length){
+    const s=getSettings(),myMin=s.minKts||GO,myMax=s.maxKts||999;
+    const cells=wd.days.map(day=>{
+      const k=day.peak||0,c=wc(k),isGo=k>=myMin,inRange=isGo&&k<=myMax;
+      const dt=new Date(day.date+'T12:00');
+      const lbl=dt.toLocaleDateString('de',{weekday:'short'})+' '+dt.getDate();
+      const bH=Math.max(3,Math.min(Math.round((k/35)*26),26));
+      return`<div class="fc10-day${isGo?' fc10-go':''}${inRange?' fc10-myrange':''}"><span class="fc10-label">${lbl}</span><div class="fc10-bar-wrap"><div class="fc10-bar" style="height:${bH}px;background:${c}${isGo?';box-shadow:0 0 5px '+c+'66':''}"></div></div><span class="fc10-val" style="color:${k>=4?c:'rgba(255,255,255,.18)'}">${k>=4?k.toFixed(0):'–'}</span></div>`;
+    }).join('');
+    fc10=`<div class="fc10-wrap"><div class="section-label">📅 16-Tage Outlook (kts — dein Fenster: ${myMin}–${myMax>=90?'∞':myMax} kts)</div><div class="fc10-days">${cells}</div></div>`;
+  }
+
   // Model toggle
   let mt='',md='';
   if(wd){
@@ -1001,7 +1177,7 @@ function renderCard(lake){
 
   return`<div class="lake-card ${isGo?'is-go':''}" style="border:1px solid ${isGo?'var(--go-color)33':'rgba(255,255,255,0.08)'}">
     <div class="card-header"><div><div class="lake-name"><span style="font-size:22px">${lake.emoji}</span><h2>${lake.name}</h2>${badge}</div><span class="lake-sub">${lake.subtitle} · ${lake.distance}</span></div><div class="wind-big">${wH}</div></div>
-    ${mapHtml}${sportBadges}${entryHtml}${camBtn}${windHtml}${h8}${fc}${mt}${md}<div class="card-sep"></div>${icsBtn}<div class="services">${svcs}</div></div>`;
+    ${mapHtml}${sportBadges}${entryHtml}${camBtn}${windHtml}${h8}${fc}${fc10}${mt}${md}<div class="card-sep"></div>${icsBtn}<div class="services">${svcs}</div></div>`;
 }
 
 let intlOpen=false,intlFetched=false;
@@ -1073,7 +1249,7 @@ async function fetchLakeList(list,rerender){
   for(const lake of list){
     delete store[lake.id+'_err'];
     try{
-      const res=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lake.lat}&longitude=${lake.lon}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&models=${mk}&timezone=auto&forecast_days=3`);
+      const res=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lake.lat}&longitude=${lake.lon}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&models=${mk}&timezone=auto&forecast_days=16`);
       if(!res.ok)throw new Error('API '+res.status);
       store[lake.id]=parse(await res.json());
     }catch(e){store[lake.id+'_err']=e.message}
@@ -1084,6 +1260,7 @@ async function fetchLakeList(list,rerender){
 async function fetchAllLakes(){
   renderAll();
   await fetchLakeList(LAKES,renderAll);
+  checkNotifications();
 }
 
 async function fetchIntl(){
@@ -1158,7 +1335,235 @@ function handleSubmit(e){
 function openLegal(id){document.getElementById('modal-'+id).classList.add('open');document.body.style.overflow='hidden';}
 function closeLegal(id){document.getElementById('modal-'+id).classList.remove('open');document.body.style.overflow='';}
 function closeLegalOnOverlay(e){if(e.target===e.currentTarget){const id=e.currentTarget.id.replace('modal-','');closeLegal(id);}}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')['impressum','terms','privacy'].forEach(closeLegal);});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    ['impressum','terms','privacy'].forEach(closeLegal);
+    closeSettings();
+  }
+});
+
+// ─── SETTINGS ──────────────────────────────────────────────────────────────
+const SETTINGS_KEY='wf_settings_v1';
+const NOTIF_SENT_KEY='wf_notif_sent_v1';
+const NOTIF_DAY_OPTIONS=[
+  {days:1,label:'🌅 Morgen',desc:'Morgen ist es soweit!'},
+  {days:2,label:'📅 Übermorgen',desc:'Übermorgen sieht\'s gut aus'},
+  {days:5,label:'📆 In 5 Tagen',desc:'In 5 Tagen kommt Wind!'},
+  {days:10,label:'🗓️ In 10 Tagen',desc:'Frühwarnung: In 10 Tagen'}
+];
+
+function getSettings(){
+  try{
+    const raw=localStorage.getItem(SETTINGS_KEY);
+    const saved=raw?JSON.parse(raw):{};
+    return Object.assign({minKts:8,maxKts:30,spots:LAKES.map(l=>l.id),ntfyTopic:'',notifDays:[1,2,5],browserNotif:false},saved);
+  }catch(e){
+    return{minKts:8,maxKts:30,spots:LAKES.map(l=>l.id),ntfyTopic:'',notifDays:[1,2,5],browserNotif:false};
+  }
+}
+
+function saveSettings(s){
+  try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(s));}catch(e){}
+}
+
+function openSettings(){
+  updateSettingsUI();
+  document.getElementById('settingsOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  updateBrowserNotifStatus();
+  // show dot if configured
+  const cfg=getSettings();
+  if(cfg.ntfyTopic||cfg.spots.length) document.getElementById('settingsFab').classList.add('has-config');
+}
+
+function closeSettings(){
+  document.getElementById('settingsOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function overlayClose(e){
+  if(e.target===e.currentTarget) closeSettings();
+}
+
+function saveSettingsAndClose(){
+  const s=getSettings();
+  s.minKts=parseInt(document.getElementById('sMinKts').value)||8;
+  s.maxKts=parseInt(document.getElementById('sMaxKts').value)||30;
+  s.ntfyTopic=(document.getElementById('sNtfyTopic').value||'').trim();
+  // spots
+  s.spots=[];
+  document.querySelectorAll('.s-spot-chip').forEach(c=>{if(c.classList.contains('active'))s.spots.push(c.dataset.id);});
+  // notif days
+  s.notifDays=[];
+  document.querySelectorAll('.notif-day-check').forEach(cb=>{if(cb.checked)s.notifDays.push(parseInt(cb.value));});
+  saveSettings(s);
+  // show dot if configured
+  if(s.ntfyTopic||s.spots.length) document.getElementById('settingsFab').classList.add('has-config');
+  closeSettings();
+  renderAll(); // re-render to reflect new range highlights
+}
+
+function updateSettingsUI(){
+  const s=getSettings();
+  document.getElementById('sMinKts').value=s.minKts;
+  document.getElementById('sMaxKts').value=s.maxKts;
+  updateRangeDisplay();
+  document.getElementById('sNtfyTopic').value=s.ntfyTopic||'';
+  // Spot chips — all 12 spots
+  const sc=document.getElementById('sSpotChips');
+  sc.innerHTML=[...LAKES,...INTL].map(l=>
+    `<span class="s-spot-chip${s.spots.includes(l.id)?' active':''}" data-id="${l.id}" onclick="this.classList.toggle('active')">${l.emoji||'📍'} ${l.name}</span>`
+  ).join('');
+  // Notification day toggles
+  const nd=document.getElementById('sNotifDays');
+  nd.innerHTML=NOTIF_DAY_OPTIONS.map(o=>
+    `<label class="notif-day-row"><input type="checkbox" class="notif-day-check" value="${o.days}" ${s.notifDays.includes(o.days)?'checked':''}><span>${o.label}</span><span class="notif-day-desc">${o.desc}</span></label>`
+  ).join('');
+}
+
+function updateRangeDisplay(){
+  const mn=parseInt(document.getElementById('sMinKts').value)||8;
+  const mx=parseInt(document.getElementById('sMaxKts').value)||30;
+  const el=document.getElementById('sRangeDisplay');
+  if(el) el.textContent=`${mn} – ${mx>=90?'∞':mx} kts`;
+}
+// live range display on input
+setTimeout(()=>{
+  ['sMinKts','sMaxKts'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',updateRangeDisplay);});
+},300);
+
+// ─── NTFY PUSH ──────────────────────────────────────────────────────────────
+async function testNtfy(){
+  const topic=(document.getElementById('sNtfyTopic').value||'').trim();
+  if(!topic){alert('Bitte zuerst einen Topic-Namen eintragen!');return;}
+  const btn=document.querySelector('.ntfy-test');
+  if(btn){btn.textContent='Sende…';btn.disabled=true;}
+  try{
+    const r=await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`,{
+      method:'POST',
+      headers:{'Title':'🪁 Wind Dashboard Test','Priority':'default','Tags':'wind,kite'},
+      body:'🎉 Verbindung klappt! Dein Wind Dashboard kann dir jetzt Push-Notifications schicken.'
+    });
+    if(btn){btn.textContent=r.ok?'✅ Gesendet!':'❌ Fehler';setTimeout(()=>{btn.textContent='Test 🔔';btn.disabled=false;},3000);}
+  }catch(e){
+    if(btn){btn.textContent='❌ Fehler';setTimeout(()=>{btn.textContent='Test 🔔';btn.disabled=false;},3000);}
+  }
+}
+
+async function sendNtfy(topic,title,body){
+  if(!topic)return;
+  try{
+    await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`,{
+      method:'POST',
+      headers:{'Title':title,'Priority':'high','Tags':'wind,kite,warning'},
+      body
+    });
+  }catch(e){}
+}
+
+// ─── BROWSER NOTIFICATIONS ──────────────────────────────────────────────────
+function updateBrowserNotifStatus(){
+  const btn=document.getElementById('browserNotifBtn');
+  const st=document.getElementById('browserNotifStatus');
+  if(!('Notification' in window)){
+    if(btn)btn.style.display='none';
+    if(st){st.className='notif-status off';st.innerHTML='<span class="notif-dot"></span> nicht unterstützt';}
+    return;
+  }
+  if(Notification.permission==='granted'){
+    if(btn){btn.textContent='✅ Aktiviert';btn.disabled=true;}
+    if(st){st.className='notif-status on';st.innerHTML='<span class="notif-dot"></span> aktiv';}
+  }else if(Notification.permission==='denied'){
+    if(btn){btn.textContent='🚫 Blockiert';btn.disabled=true;}
+    if(st){st.className='notif-status off';st.innerHTML='<span class="notif-dot"></span> blockiert';}
+  }else{
+    if(btn){btn.textContent='Browser-Notifications aktivieren';btn.disabled=false;}
+    if(st){st.className='notif-status off';st.innerHTML='<span class="notif-dot"></span> inaktiv';}
+  }
+}
+
+async function requestBrowserNotif(){
+  if(!('Notification' in window)){alert('Dein Browser unterstützt keine Notifications.');return;}
+  const perm=await Notification.requestPermission();
+  const s=getSettings();s.browserNotif=(perm==='granted');saveSettings(s);
+  updateBrowserNotifStatus();
+  if(perm==='granted'){
+    new Notification('🪁 Wind Dashboard',{body:'Super! Du bekommst ab jetzt Alerts wenn Wind kommt.',icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🪁</text></svg>'});
+  }
+}
+
+// ─── NOTIFICATION LOGIC ─────────────────────────────────────────────────────
+function getNotifSent(){
+  try{return JSON.parse(localStorage.getItem(NOTIF_SENT_KEY)||'{}');}catch(e){return{};}
+}
+function markNotifSent(key){
+  const s=getNotifSent();
+  s[key]=Date.now();
+  const cutoff=Date.now()-48*3600*1000;
+  Object.keys(s).forEach(k=>{if(s[k]<cutoff)delete s[k];});
+  try{localStorage.setItem(NOTIF_SENT_KEY,JSON.stringify(s));}catch(e){}
+}
+function wasNotifSentRecently(key){
+  const s=getNotifSent();
+  const ts=s[key];
+  return ts&&(Date.now()-ts)<12*3600*1000;
+}
+
+async function checkNotifications(){
+  const cfg=getSettings();
+  const canNtfy=!!cfg.ntfyTopic;
+  const canBrowser='Notification' in window&&Notification.permission==='granted';
+  if(!canNtfy&&!canBrowser)return;
+  if(!cfg.spots.length||!cfg.notifDays.length)return;
+
+  const today=new Date();today.setHours(0,0,0,0);
+  const alerts=[];
+
+  for(const lake of[...LAKES,...INTL]){
+    if(!cfg.spots.includes(lake.id))continue;
+    const wd=store[lake.id];
+    if(!wd||!wd.days||!wd.days.length)continue;
+    for(const opt of NOTIF_DAY_OPTIONS){
+      if(!cfg.notifDays.includes(opt.days))continue;
+      const target=new Date(today);
+      target.setDate(today.getDate()+opt.days);
+      const targetStr=target.toISOString().slice(0,10);
+      const day=wd.days.find(d=>d.date===targetStr);
+      if(!day)continue;
+      const peak=day.peak||0;
+      if(peak>=cfg.minKts&&(cfg.maxKts>=90||peak<=cfg.maxKts)){
+        const key=`${lake.id}_${targetStr}_${opt.days}d`;
+        if(!wasNotifSentRecently(key)) alerts.push({lake,day,opt,peak,key});
+      }
+    }
+  }
+
+  for(const a of alerts){
+    const title=`🪁 ${a.lake.name}: ${a.opt.desc}`;
+    const body=`${a.peak.toFixed(0)} kts erwartet — dein Fenster: ${cfg.minKts}–${cfg.maxKts>=90?'∞':cfg.maxKts} kts`;
+    if(canNtfy) await sendNtfy(cfg.ntfyTopic,title,body);
+    if(canBrowser){
+      try{new Notification(title,{body,icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🪁</text></svg>'});}catch(e){}
+    }
+    markNotifSent(a.key);
+  }
+}
+
+// ─── PWA MANIFEST ────────────────────────────────────────────────────────────
+(function(){
+  const m={
+    name:'Wind Dashboard – Elsbethen',short_name:'WindDash',
+    description:'Live wind forecast for kite & wingfoil spots',
+    display:'standalone',orientation:'portrait',
+    background_color:'#060d1f',theme_color:'#060d1f',
+    start_url:'.',
+    icons:[{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🪁</text></svg>',sizes:'any',type:'image/svg+xml'}]
+  };
+  try{
+    const blob=new Blob([JSON.stringify(m)],{type:'application/manifest+json'});
+    document.getElementById('pwaManifest').href=URL.createObjectURL(blob);
+  }catch(e){}
+})();
 
 updatePageLang();init();renderAll();fetchAllLakes();setInterval(updFooter,60000);
 </script>
